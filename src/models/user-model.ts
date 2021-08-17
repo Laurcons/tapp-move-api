@@ -8,7 +8,7 @@ export interface User extends mongoose.Document {
     registeredAt: Date;
 }
 
-const userSchema = new mongoose.Schema({
+export const userSchema = new mongoose.Schema({
 	email: String,
 	username: String,
 	password: String,

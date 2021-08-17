@@ -5,8 +5,8 @@ import { Logger } from "./logger";
 import { mongoConnect } from "./database";
 import Config from "./environment";
 import appRouter from "./routes";
-import withErrorHandling from "./error-handler";
-import withNotFoundHandler from "./not-found-handler";
+import withErrorHandling from "./middlewares/error-handler";
+import withNotFoundHandler from "./middlewares/not-found-handler";
 
 const app = express();
 
