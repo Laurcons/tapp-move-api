@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/main.ts",
   "scripts": {
-    "start": "node -r source-map-support/register  ./build/",
+    "start": "node -r source-map-support/register --experimental-modules ./build/",
     "dev": "tsc-watch --onSuccess \"npm start\""
   },
   "author": "Laurcons@Tapp",
@@ -12,6 +12,7 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "colors": "^1.4.0",
+    "crypto-random-string": "^3.3.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",

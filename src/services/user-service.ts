@@ -4,9 +4,9 @@ import CrudService from "./crud-service";
 import bcrypt from "bcrypt";
 import SessionService from "./session-service";
 import Config from '../environment';
+import mongoose from "mongoose";
 
 export default class UserService extends CrudService<User> {
-
 	sessionService = new SessionService();
 
 	constructor() {
@@ -18,14 +18,14 @@ export default class UserService extends CrudService<User> {
 		passwordRaw: string;
 		email: string;
 	}) => {
-        const hashed = await bcrypt.hash(info.passwordRaw, 12);
-        const data = {
+		const hashed = this.hashPassword(info.passwordRaw);
+		const data = {
 			email: info.email,
 			password: hashed,
 			username: info.username,
 		};
 		const result = await this.model.insertMany([data]);
-        return this.login(result[0]);
+		return this.login(result[0]);
 	};
 
 	isEmailAvailable = async (email: string) => {
@@ -41,25 +41,45 @@ export default class UserService extends CrudService<User> {
 
 	login = async (user: User) => {
 		// create jwt
-		const jwt = await JWTP.sign({}, Config.get('AUTH_SECRET'), {
-			subject: user._id.toString()
+		const jwt = await JWTP.sign({}, Config.get("AUTH_SECRET"), {
+			subject: user._id.toString(),
 		});
 		// create session
 		const session = await this.sessionService.insert({
 			jwt,
 			user,
-			type: "user"
+			type: "user",
 		});
 		return {
-			jwt, user
+			jwt,
+			user,
 		};
 	};
 
 	logout = async (user: User) => {
 		await this.sessionService.deleteOne({ _id: user._id });
-	}
+	};
 
 	verifyPassword = async (raw: string, hashed: string) => {
 		return await bcrypt.compare(raw, hashed);
+	};
+
+	hashPassword = async (raw: string) => {
+		return await bcrypt.hash(raw, 12);
+	};
+
+	attachForgotPasswordToken = async (token: string, user: User) => {
+		await this.model.updateOne(
+			{ _id: user._id },
+			{ $set: { forgotPasswordToken: token } }
+		);
+	};
+
+	findUserWithForgotPasswordToken = async (token: string) => {
+		// find user in db
+		const user = await this.model.findOne({
+			forgotPasswordToken: token,
+		});
+		return user;
 	};
 }

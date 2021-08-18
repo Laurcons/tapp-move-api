@@ -11,6 +11,16 @@ userRouter.post(
 	withAuthentication("user"),
 	asyncWrap(UserController.logout)
 );
+userRouter.get(
+	"/me",
+	withAuthentication("user"),
+	asyncWrap(UserController.getMe)
+);
+userRouter.patch(
+	"/me",
+	withAuthentication("user"),
+	asyncWrap(UserController.update)
+);
 
 const appRouter = express.Router();
 appRouter.use(userRouter);
