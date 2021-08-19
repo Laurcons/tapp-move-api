@@ -17,8 +17,8 @@ abstract class CrudService<Doc extends mongoose.Document> {
 	}
 
 	async insert(doc: Partial<Doc>) {
-		const docs = await this.model.insertMany([doc]);
-		return docs[0] || null;
+		const newDoc = await this.model.create(doc);
+		return newDoc;
 	}
 
 	insertMany(docs: Partial<Doc>[]) {

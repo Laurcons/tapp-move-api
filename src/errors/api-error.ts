@@ -12,4 +12,5 @@ export default class ApiError extends Error {
     /** Only thrown at login */
     static emailPasswordIncorrect = new ApiError(400, "email-password-incorrect", "Your email or password is incorrect!");
     static passwordIncorrect = new ApiError(400, "password-incorrect", "The password is incorrect");
+    static scooterNotFound = new ApiError(404, "scooter-not-found", "The scooter was not found");
 }

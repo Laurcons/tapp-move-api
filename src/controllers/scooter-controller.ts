@@ -1,24 +1,42 @@
 import express from "express";
+import ApiError from "../errors/api-error";
 import BodyApiError from "../errors/body-api-error";
+import { Scooter } from "../models/scooter-model";
 import ScooterService from "../services/scooter-service";
 
 class ScooterController {
 	scooterService = new ScooterService();
 
-	findNear = async (req: express.Request, res: express.Response) => {
-		if (typeof req.query.location !== "string")
-			throw new BodyApiError("query.location", "not-present");
-        const parts = req.query.location.split(',');
-        if (parts.length !== 2)
-            throw new BodyApiError("query.location", "invalid");
-        const first = parseFloat(parts[0]);
-        const last = parseFloat(parts[1]);
-		const result = await this.scooterService.findAllNearAndUnlocked([first, last]);
+	findNear = async (
+		req: express.Request<{}, {}, {}, { location: string }>,
+		res: express.Response<{ status: string; scooters: Scooter[] }>
+	) => {
+		const parts = req.query.location.split(",");
+		const first = parseFloat(parts[0]);
+		const last = parseFloat(parts[1]);
+		const result = await this.scooterService.findAllNearAndUnbooked([
+			first,
+			last,
+		]);
+		res.json({
+			status: "success",
+			scooters: result,
+		});
+	};
+
+	getId = async (
+		req: express.Request<{ code: string }>,
+		res: express.Response<{ status: string; scooter: Scooter }>
+	) => {
+        const { code } = req.params;
+        const scooter = await this.scooterService.findOne({ code });
+        if (!scooter)
+            throw ApiError.scooterNotFound;
         res.json({
             status: "success",
-            scooters: result
+            scooter
         });
-	};
+    };
 }
 
 export default new ScooterController();

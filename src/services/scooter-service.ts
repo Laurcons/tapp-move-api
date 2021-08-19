@@ -6,7 +6,7 @@ export default class ScooterService extends CrudService<Scooter> {
 		super(ScooterModel);
 	}
 
-    async findAllNearAndUnlocked(coordinates: [number, number]) {
+    async findAllNearAndUnbooked(coordinates: [number, number]) {
         return await this.model.find({
 			location: {
 				$nearSphere: {
