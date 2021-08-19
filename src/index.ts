@@ -4,8 +4,8 @@ import "colors";
 import { Logger } from "./logger";
 import { mongoConnect } from "./database";
 import Config from "./environment";
-import appRouter from "./routes";
-import withErrorHandling from "./middlewares/error-handler";
+import appRouter from "./routers/app-router";
+import handleErrors from "./middlewares/error-handler";
 import withNotFoundHandler from "./middlewares/not-found-handler";
 
 const app = express();
@@ -18,7 +18,7 @@ app.use(morgan("dev"));
 app.use("/api-v1", appRouter);
 
 app.use(withNotFoundHandler());
-app.use(withErrorHandling(new Logger({prefix: "exception"})));
+app.use(handleErrors(new Logger({prefix: "exception"})));
 
 const expressLogger = new Logger({prefix: "express"});
 

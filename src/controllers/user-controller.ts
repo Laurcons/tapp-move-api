@@ -5,6 +5,8 @@ import UserService from "../services/user-service";
 import cryptoRandomString from "crypto-random-string";
 import { User } from "../models/user-model";
 import SessionService from "../services/session-service";
+import { LeanDocument } from "mongoose";
+import redact from "../redact";
 
 const usernameRegex = /^[a-zA-Z0-9_-]{4,16}$/;
 const emailRegex = /^[a-z0-9_-]+\@[a-z0-9_-]+\.[a-z]+$/;
@@ -13,101 +15,68 @@ class UserController {
 	userService = new UserService();
 	sessionService = new SessionService();
 
-	register = async (req: express.Request, res: express.Response) => {
-		if (!req.body.email) throw new BodyApiError("email", "not-present");
-		if (!req.body.password)
-			throw new BodyApiError("password", "not-present");
-		if (!req.body.username)
-			throw new BodyApiError("username", "not-present");
-		const email = req.body.email.trim() as string;
-		const password = req.body.password.trim() as string;
-		const username = req.body.username.trim() as string;
-		if (!usernameRegex.test(username)) {
-			throw new BodyApiError(
-				"username",
-				"not-acceptable",
-				`Must follow the regex ${usernameRegex}`
-			);
-		}
-		if (!emailRegex.test(email)) {
-			throw new BodyApiError(
-				"email",
-				"not-acceptable",
-				`Must follow the regex ${emailRegex}`
-			);
-		}
-		if (!(await this.userService.isEmailAvailable(email))) {
-			throw new BodyApiError(
-				"email",
-				"not-available",
-				"This email is reserved."
-			);
-		}
-		if (!(await this.userService.isPasswordSecure(password))) {
-			throw new BodyApiError(
-				"password",
-				"not-secure",
-				"This password is not secure enough."
-			);
-		}
+	register = async (
+		req: express.Request<
+			{},
+			{},
+			{ username: string; email: string; password: string }
+		>,
+		res: express.Response<
+			{ status: string; token: string; user: Omit<LeanDocument<User>, "password"> }
+		>
+	) => {
+		const { email, username, password } = req.body;
 		// everything should be in order.
-		const { jwt, user } = await this.userService.register({
+		const { jwt, user } = await this.userService.register(
 			username,
-			passwordRaw: password,
-			email,
-		});
+			password,
+			email
+		);
 		res.json({
 			status: "success",
-			user: user.toObject(),
+			user: redact(user, "password").toObject(),
 			token: jwt,
 		});
 	};
 
-	login = async (req: express.Request, res: express.Response) => {
-		if (!req.body.email) throw new BodyApiError("email", "not-present");
-		if (!req.body.password)
-			throw new BodyApiError("password", "not-present");
-		const email = req.body.email.trim() as string;
-		const password = req.body.password.trim() as string;
-		const user = await this.userService.findOne({ email });
-		if (!user)
-			throw new ApiError(
-				400,
-				"email-password-incorrect",
-				"The email or password were incorrect"
-			);
-		if (!await this.userService.verifyPassword(password, user.password))
-			throw new ApiError(
-				400,
-				"email-password-incorrect",
-				"The email or password were incorrect"
-			);
-		// everything should be fine then
-		const { jwt, user: newUser } = await this.userService.login(user);
-		let userRedacted = newUser.toObject() as any;
-		userRedacted.password = undefined;
+	login = async (
+		req: express.Request<
+			{},
+			{}, 
+			{ email: string; password: string; }
+		>, 
+		res: express.Response<
+			{ status: string; user: Omit<LeanDocument<User>, "password">, token: string; }
+		>
+	) => {
+		const { email, password } = req.body;
+		const { jwt, user } = await this.userService.login(email, password);
 		res.json({
 			status: "success",
-			user: userRedacted,
+			user: redact(user, "password").toObject(),
 			token: jwt,
 		});
 	};
 
-	logout = async (req: express.Request, res: express.Response) => {
+	logout = async (
+		req: express.Request<{}, {}, {}>, 
+		res: express.Response<{status: string;}>
+	) => {
 		this.userService.logout(req.session.user);
 		res.json({
 			status: "success",
 		});
 	};
 
-	getMe = async (req: express.Request, res: express.Response) => {
-		let userRedacted = req.session.user.toObject() as any;
-		userRedacted.password = undefined;
+	getMe = async (
+		req: express.Request<{}, {}, {}>,
+		res: express.Response<{ status: string; user: Omit<LeanDocument<User>, "password"> }>
+	) => {
 		res.json({
 			status: "success",
-			user: userRedacted,
+			user: redact(req.session.user, "password").toObject(),
 		});
-	}
+	};
 
 	// not finished
 	// beginForgotPassword = async (req: express.Request, res: express.Response) => {
@@ -144,59 +113,22 @@ class UserController {
 	// 	}
 	// }
 
-	update = async (req: express.Request, res: express.Response) => {
-		let updateObject: Record<string, string> = {};
-		if (typeof req.body.email === "string") {
-			if (!emailRegex.test(req.body.email)) {
-				throw new BodyApiError("email", "not-acceptable");
-			}
-			if (!this.userService.isEmailAvailable(req.body.email)) {
-				throw new BodyApiError("email", "not-available");
-			}
-			updateObject.email = req.body.email;
-		}
-		if (typeof req.body.username === "string") {
-			if (!usernameRegex.test(req.body.username)) {
-				throw new BodyApiError("username", "not-acceptable");
-			}
-			updateObject.username = req.body.username;
-		}
-		if (typeof req.body.password === "string") {
-			if (typeof req.body.oldPassword !== "string") {
-				throw new BodyApiError("oldPassword", "not-present");
-			}
-			// verify old password
-			if (!await this.userService.verifyPassword(req.body.oldPassword, req.session.user.password)) {
-				throw new BodyApiError("password", "incorrect");
-			}
-			// change to new password
-			updateObject.password = await this.userService.hashPassword(
-				req.body.password
-			);
-		}
-		const newUser = Object.assign(
-			{},
-			req.session.user.toObject(),
-			updateObject
-		);
-		// update object
-		await this.userService.updateOne(
-			{ _id: newUser._id },
-			{ $set: updateObject }
-		);
-		console.log({newUser});
-		// also update the snapshot from the session object
-		await this.sessionService.updateMany(
-			{ "user._id": newUser._id },
-			{ $set: { user: newUser } }
-		);
-		let redactedUser = newUser as any;
-		redactedUser.password = undefined;
+	update = async (
+		req: express.Request<
+			{}, {},
+			{ password?: string; oldPassword?: string; email?: string; username?: string; }
+		>, 
+		res: express.Response<
+			{ status: string; user: Omit<LeanDocument<User>, "password"> }
+		>
+	) => {
+		const newUser = await this.userService.update(req.session.user, req.body);
+		console.log({ newUser });
 		res.json({
 			status: "success",
-			user: redactedUser
+			user: redact(newUser, "password").toObject(),
 		});
-	}
+	};
 }
 
 export default new UserController();

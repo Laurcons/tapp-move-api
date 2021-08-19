@@ -7,7 +7,7 @@ import { asyncWrap } from '../async-wrap';
 import Config from '../environment';
 import ApiError from '../errors/api-error';
 
-export default function withAuthentication(type: "user" | "admin") {
+export default function authenticate(type: "user" | "admin") {
     return asyncWrap(async (req: Request, res: Response, next: NextFunction) => {
         const sessionService = new SessionService();
         // find the jwt
