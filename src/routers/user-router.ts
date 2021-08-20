@@ -2,7 +2,7 @@ import express from "express";
 import { asyncWrap } from "../async-wrap";
 import authenticate from "../middlewares/auth-middleware";
 import UserController from "../controllers/user-controller";
-import { validate } from "express-validation";
+import validate from "../middlewares/validation-middleware";
 import {
 	loginValidator,
 	registerValidator,

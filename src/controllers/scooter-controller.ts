@@ -1,6 +1,7 @@
 import express from "express";
 import ApiError from "../errors/api-error";
 import BodyApiError from "../errors/body-api-error";
+import { Ride } from "../models/ride-model";
 import { Scooter } from "../models/scooter-model";
 import ScooterService from "../services/scooter-service";
 
@@ -37,6 +38,36 @@ class ScooterController {
             scooter
         });
     };
+
+	startRide = async (
+		// just to be clear:    PARAMS					BODY							QUERY
+		req: express.Request<{ code: string }, {}, { location?: [number, number] }, { isNFC?: string }>,
+		res: express.Response<{ status: string; ride: Ride }>
+	) => {
+		const ride = await this.scooterService.startRide(
+			req.session.user,
+			req.params.code,
+			req.body.location,
+			!!req.query.isNFC
+		);
+		res.json({
+			status: "success",
+			ride
+		});
+	}
+
+	ping = async (
+		req: express.Request<{ code: string; }, {}, { location: [number, number]}>,
+		res: express.Response<{ status: string; successful: boolean; }>
+	) => {
+		const { code } = req.params;
+		const { location } = req.body;
+		const successful = await this.scooterService.ping(code, location);
+		res.json({
+			status: "success",
+			successful
+		});
+	}
 }
 
 export default new ScooterController();

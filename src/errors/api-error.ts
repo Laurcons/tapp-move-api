@@ -13,4 +13,8 @@ export default class ApiError extends Error {
     static emailPasswordIncorrect = new ApiError(400, "email-password-incorrect", "Your email or password is incorrect!");
     static passwordIncorrect = new ApiError(400, "password-incorrect", "The password is incorrect");
     static scooterNotFound = new ApiError(404, "scooter-not-found", "The scooter was not found");
+    static rideNotFound = new ApiError(404, "ride-not-found", "The ride wasn't found");
+    static tooFarAway = new ApiError(400, "too-far-away", "You are too far away to do this action");
+    static alreadyRiding = new ApiError(400, "already-riding", "You are already riding a scooter");
+    static scooterUnavailable = new ApiError(400, "scooter-unavailable", "This scooter is unavailable");
 }

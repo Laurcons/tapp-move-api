@@ -7,6 +7,7 @@ import Config from "./environment";
 import appRouter from "./routers/app-router";
 import handleErrors from "./middlewares/error-handler";
 import withNotFoundHandler from "./middlewares/not-found-handler";
+import { setValidationLogger } from "./middlewares/validation-middleware";
 
 const app = express();
 
@@ -26,6 +27,7 @@ const expressLogger = new Logger({prefix: "express"});
 
     expressLogger.log("Application started");
     Config.init();
+    setValidationLogger(new Logger({ prefix: "joi" }));
     await mongoConnect();
     expressLogger.log("Connected to database");
     await listenAsync();

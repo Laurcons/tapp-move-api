@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { ValidationError } from "express-validation";
+import { ValidationError } from "joi";
 import ApiError from "../errors/api-error";
 import AuthenticationError from "../errors/authentication-error";
 import BodyApiError from "../errors/body-api-error"
@@ -23,7 +23,7 @@ export default function handleErrors(logger?: Logger) {
             });
     
         } else if (err instanceof ValidationError) {
-            res.status(err.statusCode).json({
+            res.status(422).json({
                 status: "validation-error",
                 details: err.details,
                 relationId

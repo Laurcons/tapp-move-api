@@ -1,16 +1,19 @@
 import mongoose from 'mongoose';
 
-export interface Ride {
-    from: {
-        type: "Point",
-        coordinates: [number, number]
-    },
-    to: {
-        type: "Point",
-        coordinates: [number, number]
-    },
-    scooterId: string;
-    isFinished: boolean;
+export interface Ride extends mongoose.Document {
+	from: {
+		type: "Point";
+		coordinates: [number, number];
+	};
+	to?: {
+		type: "Point";
+		coordinates: [number, number];
+	};
+    startedAt: Date;
+    endedAt?: Date;
+	scooterId: mongoose.Types.ObjectId;
+	userId: mongoose.Types.ObjectId;
+	isFinished: boolean;
 }
 
 export const rideSchema = new mongoose.Schema({
@@ -20,10 +23,20 @@ export const rideSchema = new mongoose.Schema({
     },
     to: {
         type: { type: String },
-        coordinates: [Number, Number]
+        coordinates: [Number, Number],
+        required: false,
     },
-    scooterId: String,
+    startedAt: {
+        type: Date,
+        default: Date.now
+    },
+    endedAt: {
+        type: Date,
+        required: false
+    },
+    scooterId: mongoose.Types.ObjectId,
+    userId: mongoose.Types.ObjectId,
     isFinished: Boolean
 });
 
-export const RideModel = mongoose.model("ride", rideSchema);
+export const RideModel = mongoose.model<Ride>("ride", rideSchema);

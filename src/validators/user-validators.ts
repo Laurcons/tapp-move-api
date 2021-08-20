@@ -1,9 +1,9 @@
-import { Joi } from "express-validation";
+import Joi from "joi";
 
 const usernameRegex = /^[a-zA-Z0-9-_.]{3,16}$/;
 const passwordRegex = /^.{4,}$/;
 
-export const loginValidator = {
+export const loginValidator = Joi.object({
 	body: Joi.object({
 		email: Joi.string()
             .email()
@@ -11,21 +11,23 @@ export const loginValidator = {
 		password: Joi.string()
             .required(),
 	}),
-};
+});
 
-export const registerValidator = {
+export const registerValidator = Joi.object({
 	body: Joi.object({
 		email: Joi.string()
             .email()
             .required(),
 		password: Joi.string()
-            .regex(passwordRegex).message("Your password is not secure enough!"),
+            .regex(passwordRegex).message("Your password is not secure enough!")
+            .required(),
 		username: Joi.string()
-            .regex(usernameRegex),
+            .regex(usernameRegex)
+            .required(),
 	}),
-};
+});
 
-export const updateValidator = {
+export const updateValidator = Joi.object({
     body: Joi.object({
         email: Joi.string()
             .email(),
@@ -35,4 +37,4 @@ export const updateValidator = {
             .regex(passwordRegex),
         oldPassword: Joi.string(),
     }).with("password", "oldPassword")
-}
+});
