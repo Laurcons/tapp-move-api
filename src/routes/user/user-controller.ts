@@ -5,6 +5,7 @@ import { User } from "./user-model";
 import SessionService from "../../services/session-service";
 import { LeanDocument } from "mongoose";
 import redact from "../../redact";
+import ApiError from '../../errors/api-error';
 
 const usernameRegex = /^[a-zA-Z0-9_-]{4,16}$/;
 const emailRegex = /^[a-z0-9_-]+\@[a-z0-9_-]+\.[a-z]+$/;
@@ -123,6 +124,18 @@ class UserController {
 			user: redact(newUser, "password").toObject(),
 		});
 	};
+
+	uploadDriversLicense = async (
+		req: express.Request,
+		res: express.Response<{status: string; }>
+	) => {
+		if (!req.file)
+			throw ApiError.fileNotUploaded;
+		this.userService.uploadDriversLicense(req.session.user, req.file);
+		res.json({
+			status: "success"
+		});
+	}
 }
 
 export default new UserController();

@@ -8,6 +8,7 @@ import appRouter from "./routes/app-router";
 import handleErrors from "./middlewares/error-handler";
 import handleNotFound from "./middlewares/not-found-handler";
 import { setValidationLogger } from "./middlewares/validation-middleware";
+import { inits3 } from "./aws";
 
 Config.init();
 
@@ -31,8 +32,10 @@ const expressLogger = new Logger({prefix: "express"});
 
     expressLogger.log("Application started");
     setValidationLogger(new Logger({ prefix: "joi" }));
+    expressLogger.log("Connecting to database...");
     await mongoConnect();
-    expressLogger.log("Connected to database");
+    expressLogger.log("Initializing S3...");
+    inits3();
     await listenAsync();
     expressLogger.log(`Listening on ${PORT}`.rainbow);
 

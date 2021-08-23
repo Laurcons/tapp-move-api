@@ -19,4 +19,5 @@ export default class ApiError extends Error {
     static tooFarAway = new ApiError(400, "too-far-away", "You are too far away to do this action");
     static alreadyRiding = new ApiError(400, "already-riding", "You are already riding a scooter");
     static scooterUnavailable = new ApiError(400, "scooter-unavailable", "This scooter is unavailable");
+    static fileNotUploaded = new ApiError(400, "file-not-uploaded", "You need to upload a file!");
 }

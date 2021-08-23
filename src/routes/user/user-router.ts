@@ -10,6 +10,7 @@ import {
 	updateValidator,
 } from "./user-validators";
 import validateDTO from "../../middlewares/validate-dto-middleware";
+import multer from 'multer';
 
 const userRouter = express.Router();
 
@@ -39,5 +40,11 @@ userRouter.patch(
 	validate(updateValidator),
 	asyncWrap(UserController.update)
 );
+userRouter.post(
+	"/me/driversLicense",
+	authenticate("user"),
+	multer().single("image"),
+	asyncWrap(UserController.uploadDriversLicense)
+)
 
 export default userRouter;

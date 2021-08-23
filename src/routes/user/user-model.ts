@@ -7,6 +7,7 @@ export interface User extends mongoose.Document {
     lastLoginAt: Date;
     registeredAt: Date;
 	forgotPasswordToken?: string;
+	driversLicenseKey?: string;
 }
 
 export const userSchema = new mongoose.Schema({
@@ -22,6 +23,10 @@ export const userSchema = new mongoose.Schema({
 		default: Date.now,
 	},
 	forgotPasswordToken: {
+		type: String,
+		required: false
+	},
+	driversLicenseKey: {
 		type: String,
 		required: false
 	}

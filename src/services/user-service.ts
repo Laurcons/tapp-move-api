@@ -5,6 +5,8 @@ import bcrypt from "bcrypt";
 import SessionService from "./session-service";
 import Config from "../environment";
 import ApiError from "../errors/api-error";
+import { s3 } from "../aws";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 export default class UserService extends CrudService<User> {
 	sessionService = new SessionService();
@@ -146,7 +148,18 @@ export default class UserService extends CrudService<User> {
 		return user;
 	};
 
-	uploadDriversLicense = async (user: User, image: File) => {
-
+	uploadDriversLicense = async (user: User, image: Express.Multer.File) => {
+		const key = `driverslicense-${user._id}`;
+		const mime = image.mimetype;
+		await s3().send(new PutObjectCommand({
+			Bucket: Config.get("AWS_BUCKET"),
+			Key: key,
+			ContentType: mime,
+			Body: image.buffer
+		}));
+		await this.model.updateOne(
+			{ _id: user._id },
+			{ $set: { driversLicenseKey: key } }
+		);
 	}
 }
