@@ -99,12 +99,16 @@ export default class ScooterService extends CrudService<Scooter> {
 	}
 
 	async toggleLock(scooterCode: string, user: User, lock: boolean) {
+		// retrieve scooter
+		const scooter = await this.model.findOne({ code: scooterCode });
+		if (!scooter)
+			throw ApiError.scooterNotFound;
 		// find ride with user
-		const ride = this.rideService.findOne({ userId: user._id });
+		const ride = await this.rideService.findOne({ userId: user._id, isFinished: false, scooterId: scooter._id });
 		if (!ride)
-			throw ApiError.rideNotFound;
+			throw ApiError.actionNotAllowed;
 		// update scooter n set locked
-		this.model.updateOne(
+		await this.model.updateOne(
 			{ code: scooterCode },
 			{ $set: { isUnlocked: !lock } }
 		);

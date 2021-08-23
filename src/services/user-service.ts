@@ -145,4 +145,8 @@ export default class UserService extends CrudService<User> {
 		});
 		return user;
 	};
+
+	uploadDriversLicense = async (user: User, image: File) => {
+
+	}
 }
