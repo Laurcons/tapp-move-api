@@ -1,13 +1,13 @@
 import express from "express";
-import { asyncWrap } from "../async-wrap";
-import authenticate from "../middlewares/auth-middleware";
-import UserController from "../controllers/user-controller";
-import validate from "../middlewares/validation-middleware";
+import { asyncWrap } from "../../async-wrap";
+import authenticate from "../../middlewares/auth-middleware";
+import UserController from "./user-controller";
+import validate from "../../middlewares/validation-middleware";
 import {
 	loginValidator,
 	registerValidator,
 	updateValidator,
-} from "../validators/user-validators";
+} from "../../validators/user-validators";
 
 const userRouter = express.Router();
 

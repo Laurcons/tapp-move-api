@@ -1,8 +1,8 @@
 import { getDistance } from "geolib";
 import { DateTime } from "luxon";
 import ApiError from "../errors/api-error";
-import { Ride, RideModel } from "../models/ride-model";
-import { User } from "../models/user-model";
+import { Ride, RideModel } from "../routes/ride/ride-model";
+import { User } from "../routes/user/user-model";
 import CrudService from "./crud-service";
 
 export default class RideService extends CrudService<Ride> {

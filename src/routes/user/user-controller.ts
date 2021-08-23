@@ -1,12 +1,12 @@
 import express from "express";
-import ApiError from "../errors/api-error";
-import BodyApiError from "../errors/body-api-error";
-import UserService from "../services/user-service";
+import ApiError from "../../errors/api-error";
+import BodyApiError from "../../errors/body-api-error";
+import UserService from "../../services/user-service";
 import cryptoRandomString from "crypto-random-string";
-import { User } from "../models/user-model";
-import SessionService from "../services/session-service";
+import { User } from "./user-model";
+import SessionService from "../../services/session-service";
 import { LeanDocument } from "mongoose";
-import redact from "../redact";
+import redact from "../../redact";
 
 const usernameRegex = /^[a-zA-Z0-9_-]{4,16}$/;
 const emailRegex = /^[a-z0-9_-]+\@[a-z0-9_-]+\.[a-z]+$/;

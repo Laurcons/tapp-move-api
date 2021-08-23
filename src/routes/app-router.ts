@@ -1,7 +1,7 @@
 import express from "express";
-import rideRouter from "./ride-router";
-import scooterRouter from "./scooter-router";
-import userRouter from "./user-router";
+import rideRouter from "./ride/ride-router";
+import scooterRouter from "./scooter/scooter-router";
+import userRouter from "./user/user-router";
 
 const appRouter = express.Router();
 appRouter.use("/users", userRouter);

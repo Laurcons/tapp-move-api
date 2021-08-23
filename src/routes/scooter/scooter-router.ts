@@ -3,12 +3,12 @@ import {
 	getIdValidator,
 	pingValidator,
 	startRideValidator,
-} from "./../validators/scooter-validators";
+} from "../../validators/scooter-validators";
 import express from "express";
-import { asyncWrap } from "../async-wrap";
-import authenticate from "../middlewares/auth-middleware";
-import ScooterController from "../controllers/scooter-controller";
-import validate from "../middlewares/validation-middleware";
+import { asyncWrap } from "../../async-wrap";
+import authenticate from "../../middlewares/auth-middleware";
+import ScooterController from "./scooter-controller";
+import validate from "../../middlewares/validation-middleware";
 
 const scooterRouter = express.Router();
 

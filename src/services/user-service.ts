@@ -1,5 +1,5 @@
 import { JWTP } from "./../jwt-promise";
-import { User, UserModel } from "../models/user-model";
+import { User, UserModel } from "../routes/user/user-model";
 import CrudService from "./crud-service";
 import bcrypt from "bcrypt";
 import SessionService from "./session-service";

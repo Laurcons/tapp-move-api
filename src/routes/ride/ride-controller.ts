@@ -1,4 +1,4 @@
-import RideService from "../services/ride-service";
+import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
 
 class RideController {

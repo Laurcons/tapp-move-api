@@ -4,7 +4,7 @@ import "colors";
 import { Logger } from "./logger";
 import { mongoConnect } from "./database";
 import Config from "./environment";
-import appRouter from "./routers/app-router";
+import appRouter from "./routes/app-router";
 import handleErrors from "./middlewares/error-handler";
 import withNotFoundHandler from "./middlewares/not-found-handler";
 import { setValidationLogger } from "./middlewares/validation-middleware";

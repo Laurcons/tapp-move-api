@@ -1,4 +1,4 @@
-import { Session } from "../models/session-model";
+import { Session } from "../routes/user/session-model";
 
 
 declare global {

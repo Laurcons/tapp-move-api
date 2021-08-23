@@ -1,4 +1,4 @@
-import { Session, SessionModel } from "../models/session-model";
+import { Session, SessionModel } from "../routes/user/session-model";
 import CrudService from "./crud-service";
 
 export default class SessionService extends CrudService<Session> {

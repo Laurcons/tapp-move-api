@@ -1,9 +1,9 @@
 import express from "express";
-import ApiError from "../errors/api-error";
-import BodyApiError from "../errors/body-api-error";
-import { Ride } from "../models/ride-model";
-import { Scooter } from "../models/scooter-model";
-import ScooterService from "../services/scooter-service";
+import ApiError from "../../errors/api-error";
+import BodyApiError from "../../errors/body-api-error";
+import { Ride } from "../ride/ride-model";
+import { Scooter } from "./scooter-model";
+import ScooterService from "../../services/scooter-service";
 
 class ScooterController {
 	scooterService = new ScooterService();

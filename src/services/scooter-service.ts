@@ -1,10 +1,10 @@
-import { Scooter, ScooterModel } from "../models/scooter-model";
+import { Scooter, ScooterModel } from "../routes/scooter/scooter-model";
 import CrudService from "./crud-service";
 import mongoose from "mongoose";
 import { getDistance } from "geolib";
 import ApiError from "../errors/api-error";
 import RideService from "./ride-service";
-import { User } from "../models/user-model";
+import { User } from "../routes/user/user-model";
 
 export default class ScooterService extends CrudService<Scooter> {
 	rideService = new RideService();
