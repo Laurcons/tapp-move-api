@@ -1,6 +1,6 @@
 {
   "name": "move-api",
-  "version": "0.1",
+  "version": "1.0.0",
   "description": "",
   "main": "src/main.ts",
   "scripts": {
@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
     "colors": "^1.4.0",
     "crypto-random-string": "^3.3.1",
     "dotenv": "^10.0.0",
