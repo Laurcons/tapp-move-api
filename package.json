@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./build/",
     "start-map": "node -r source-map-support/register ./build/",
-    "dev": "tsc-watch --onSuccess \"npm start\""
+    "dev": "tsc-watch --onSuccess \"npm start\"",
+    "build": "tsc"
   },
   "author": "Laurcons@Tapp",
   "license": "ISC",
