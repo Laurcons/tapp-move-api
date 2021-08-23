@@ -9,12 +9,16 @@ import handleErrors from "./middlewares/error-handler";
 import handleNotFound from "./middlewares/not-found-handler";
 import { setValidationLogger } from "./middlewares/validation-middleware";
 
+Config.init();
+
 const app = express();
 
+// we don't use Config.get here because it might not exist:
+//  it is only supplied by Heroku
 const PORT = process.env.PORT ?? 8000;
 
 app.use(express.json());
-app.use(morgan("dev"));
+app.use(morgan(Config.get("MORGAN_MODE")));
 
 app.use("/api-v1", appRouter);
 
@@ -26,7 +30,6 @@ const expressLogger = new Logger({prefix: "express"});
 (async function() {
 
     expressLogger.log("Application started");
-    Config.init();
     setValidationLogger(new Logger({ prefix: "joi" }));
     await mongoConnect();
     expressLogger.log("Connected to database");
