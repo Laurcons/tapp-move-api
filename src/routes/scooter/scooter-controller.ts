@@ -1,6 +1,5 @@
 import express from "express";
 import ApiError from "../../errors/api-error";
-import BodyApiError from "../../errors/body-api-error";
 import { Ride } from "../ride/ride-model";
 import { Scooter } from "./scooter-model";
 import ScooterService from "../../services/scooter-service";
@@ -66,6 +65,18 @@ class ScooterController {
 		res.json({
 			status: "success",
 			successful
+		});
+	}
+
+	toggleLock = async (
+		req: express.Request<{ code: string; }, {}, { lock: boolean; }>,
+		res: express.Response<{ status: string; }>
+	) => {
+		const { code } = req.params;
+		const { lock } = req.body;
+		await this.scooterService.toggleLock(code, req.session.user, lock);
+		res.json({
+			status: "success"
 		});
 	}
 }

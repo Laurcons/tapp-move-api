@@ -1,8 +1,6 @@
+import { LoginBodyDTO } from './user-dto';
 import express from "express";
-import ApiError from "../../errors/api-error";
-import BodyApiError from "../../errors/body-api-error";
 import UserService from "../../services/user-service";
-import cryptoRandomString from "crypto-random-string";
 import { User } from "./user-model";
 import SessionService from "../../services/session-service";
 import { LeanDocument } from "mongoose";
@@ -40,11 +38,7 @@ class UserController {
 	};
 
 	login = async (
-		req: express.Request<
-			{},
-			{}, 
-			{ email: string; password: string; }
-		>, 
+		req: express.Request<{}, {}, LoginBodyDTO>, 
 		res: express.Response<
 			{ status: string; user: Omit<LeanDocument<User>, "password">, token: string; }
 		>
@@ -53,7 +47,7 @@ class UserController {
 		const { jwt, user } = await this.userService.login(email, password);
 		res.json({
 			status: "success",
-			user: redact(user, "password").toObject(),
+			user: redact(user.toObject(), "password"),
 			token: jwt,
 		});
 	};

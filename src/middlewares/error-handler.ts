@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express"
-import { ValidationError } from "joi";
+import { ValidationError as ValidationErrorJoi } from "joi";
+import { ValidationError as ValidationErrorDTO } from "class-validator";
 import ApiError from "../errors/api-error";
-import AuthenticationError from "../errors/authentication-error";
-import BodyApiError from "../errors/body-api-error"
 import { Logger } from "../logger";
 
 export default function handleErrors(logger?: Logger) {
@@ -21,14 +20,18 @@ export default function handleErrors(logger?: Logger) {
                 message: err.message,
                 relationId
             });
-    
-        } else if (err instanceof ValidationError) {
+        } else if (err instanceof ValidationErrorJoi) {
             res.status(422).json({
-                status: "validation-error",
+                status: "validation-error[joi]",
                 details: err.details,
                 relationId
             });
-
+        } else if (err instanceof ValidationErrorDTO) {
+            res.status(422).json({
+				status: "validation-error[dto]",
+				details: err,
+				relationId,
+			});
         } else {
             res.status(500).json({
                 status: "internal-error",

@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/main.ts",
   "scripts": {
-    "start": "node -r source-map-support/register ./build/",
+    "start": "node ./build/",
+    "start-map": "node -r source-map-support/register ./build/",
     "dev": "tsc-watch --onSuccess \"npm start\""
   },
   "author": "Laurcons@Tapp",

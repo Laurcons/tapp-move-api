@@ -4,7 +4,7 @@ import { asyncWrap } from "../../async-wrap";
 import RideController from "./ride-controller";
 import authenticate from "../../middlewares/auth-middleware";
 import validate from "../../middlewares/validation-middleware";
-import { getCurrentValidator } from "../../validators/ride-validators";
+import { getCurrentValidator } from "./ride-validators";
 
 const rideRouter = express.Router();
 

@@ -1,6 +1,6 @@
 
 import mongoose from "mongoose";
-import InvalidIdError from "../errors/invalid-id-error";
+import ApiError from "../errors/api-error";
 
 abstract class CrudService<Doc extends mongoose.Document> {
 	/**
@@ -46,7 +46,7 @@ abstract class CrudService<Doc extends mongoose.Document> {
 			try {
 				id = new mongoose.Types.ObjectId(id);
 			} catch (e) {
-				throw new InvalidIdError();
+				throw ApiError.invalidIdError;
 			}
 		}
 		return this.model.findById(id);

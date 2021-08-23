@@ -1,3 +1,4 @@
+import { LoginBodyDTO, RegisterBodyDTO } from './user-dto';
 import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
@@ -7,18 +8,19 @@ import {
 	loginValidator,
 	registerValidator,
 	updateValidator,
-} from "../../validators/user-validators";
+} from "./user-validators";
+import validateDTO from "../../middlewares/validate-dto-middleware";
 
 const userRouter = express.Router();
 
 userRouter.post(
 	"/register",
-	validate(registerValidator),
+	validateDTO({ body: RegisterBodyDTO }),
 	asyncWrap(UserController.register)
 );
 userRouter.post(
 	"/login",
-	validate(loginValidator),
+	validateDTO({ body: LoginBodyDTO }),
 	asyncWrap(UserController.login)
 );
 userRouter.post(

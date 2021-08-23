@@ -39,3 +39,12 @@ export const pingValidator = Joi.object({
             .required()
     }),
 });
+
+export const toggleLockValidator = Joi.object({
+	params: Joi.object({
+		code: Joi.string().length(4).required(),
+	}),
+	body: Joi.object({
+        lock: Joi.bool().required()
+    }),
+});
