@@ -6,7 +6,7 @@ import { mongoConnect } from "./database";
 import Config from "./environment";
 import appRouter from "./routes/app-router";
 import handleErrors from "./middlewares/error-handler";
-import withNotFoundHandler from "./middlewares/not-found-handler";
+import handleNotFound from "./middlewares/not-found-handler";
 import { setValidationLogger } from "./middlewares/validation-middleware";
 
 const app = express();
@@ -18,7 +18,7 @@ app.use(morgan("dev"));
 
 app.use("/api-v1", appRouter);
 
-app.use(withNotFoundHandler());
+app.use(handleNotFound());
 app.use(handleErrors(new Logger({prefix: "exception"})));
 
 const expressLogger = new Logger({prefix: "express"});

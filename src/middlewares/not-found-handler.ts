@@ -1,7 +1,7 @@
 
 import {Request, Response, NextFunction} from "express";
 
-export default function withNotFoundHandler() {
+export default function handleNotFound() {
     return (req: Request, res: Response, next: NextFunction) => {
         res.status(404).json({
             status: "route-not-found",
