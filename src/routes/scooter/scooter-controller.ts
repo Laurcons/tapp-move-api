@@ -39,7 +39,7 @@ class ScooterController {
     };
 
 	startRide = async (
-		// just to be clear:    PARAMS					BODY							QUERY
+		// just to be clear:     PARAMS                    BODY                            QUERY
 		req: express.Request<{ code: string }, {}, { location?: [number, number] }, { isNFC?: string }>,
 		res: express.Response<{ status: string; ride: Ride }>
 	) => {
