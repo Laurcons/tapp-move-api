@@ -45,6 +45,6 @@ userRouter.post(
 	authenticate("user"),
 	multer().single("image"),
 	asyncWrap(UserController.uploadDriversLicense)
-)
+);
 
 export default userRouter;
