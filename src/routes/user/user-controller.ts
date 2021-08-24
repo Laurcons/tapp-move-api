@@ -73,40 +73,20 @@ class UserController {
 		});
 	};
 
-	// not finished
-	// beginForgotPassword = async (req: express.Request, res: express.Response) => {
-	// 	if (!req.body.email) {
-	// 		throw new BodyApiError("email", "not-present");
-	// 	}
-	// 	const email = req.body.email.trim() as string;
-	// 	// try and find user
-	// 	const user = await this.userService.findOne({
-	// 		email
-	// 	});
-	// 	if (!user) {
-	// 		throw new BodyApiError("email", "user-not-found");
-	// 	}
-	// 	// generate token
-	// 	const token = cryptoRandomString({ length: 100, type: "alphanumeric"});
-	// 	// add token to db
-	// 	this.userService.attachForgotPasswordToken(token, user);
-	// 	// now send an email, but for the purposes of developent just send it back in the request
-	// 	res.json({
-	// 		status: "success",
-	// 		"token-that-should-have-been-sent-in-an-email": token
-	// 	});
-	// }
+	beginForgotPassword = async (
+		req: express.Request<{}, {}, { email: string; }>, 
+		res: express.Response
+	) => {
+		const { email } = req.body;
+		const result = await this.userService.beginForgotPassword(email);
+		res.json({
+			status: "success",
+			"result[dev]": result
+		});
+	}
 
-	// not finished
-	// endForgotPassword = async (req: express.Request, res: express.Response) => {
-	// 	if (!req.query.token) {
-	// 		throw new BodyApiError("token", "not-present");
-	// 	}
-	// 	const user = await this.userService.findUserWithForgotPasswordToken(req.body.token);
-	// 	if (!user) {
-	// 		throw new BodyApiError("token", "invalid-token");
-	// 	}
-	// }
+	endForgotPassword = async (req: express.Request, res: express.Response) => {
+	}
 
 	update = async (
 		req: express.Request<

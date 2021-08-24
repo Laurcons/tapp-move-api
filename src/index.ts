@@ -9,7 +9,7 @@ import handleErrors from "./middlewares/error-handler";
 import handleNotFound from "./middlewares/not-found-handler";
 import { setValidationLogger } from "./middlewares/validation-middleware";
 import { inits3 } from "./aws";
-import viewsRouter from "./routes/views-router";
+import viewsRouter from "./routes/pages/pages-router";
 import mustacheExpress from "mustache-express";
 
 Config.init();
@@ -23,7 +23,7 @@ const PORT = process.env.PORT ?? 8000;
 // configure pages
 app.engine("mst", mustacheExpress());
 app.set("view engine", "mst");
-app.set("views", "./src/views");
+app.set("views", "./src/routes/pages/views");
 app.use("/pages", viewsRouter);
 
 app.use(express.json());

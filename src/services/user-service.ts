@@ -7,9 +7,12 @@ import Config from "../environment";
 import ApiError from "../errors/api-error";
 import { s3 } from "../aws";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import cryptoRandomString from "crypto-random-string";
+import EmailService from "./email-service";
 
 export default class UserService extends CrudService<User> {
 	sessionService = new SessionService();
+	emailService = new EmailService();
 
 	constructor() {
 		super(UserModel);
@@ -133,19 +136,19 @@ export default class UserService extends CrudService<User> {
 		return newUser;
 	};
 
-	attachForgotPasswordToken = async (token: string, user: User) => {
+	beginForgotPassword = async (email: string) => {
+		const user = await this.model.findOne({ email });
+		if (!user)
+			return false;
+		const token = cryptoRandomString({ length: 100 });
+		// send email
+		await this.emailService.sendForgotPasswordEmail();
+		// await 
 		await this.model.updateOne(
 			{ _id: user._id },
 			{ $set: { forgotPasswordToken: token } }
 		);
-	};
-
-	findUserWithForgotPasswordToken = async (token: string) => {
-		// find user in db
-		const user = await this.model.findOne({
-			forgotPasswordToken: token,
-		});
-		return user;
+		return true;
 	};
 
 	uploadDriversLicense = async (user: User, image: Express.Multer.File) => {

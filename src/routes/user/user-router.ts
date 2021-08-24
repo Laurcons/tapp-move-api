@@ -5,6 +5,7 @@ import authenticate from "../../middlewares/auth-middleware";
 import UserController from "./user-controller";
 import validate from "../../middlewares/validation-middleware";
 import {
+	forgotPasswordValidator,
 	loginValidator,
 	registerValidator,
 	updateValidator,
@@ -29,8 +30,13 @@ userRouter.post(
 	authenticate("user"),
 	asyncWrap(UserController.logout)
 );
+userRouter.post(
+	"/forgotPassword",
+	validate(forgotPasswordValidator),
+	asyncWrap(UserController.beginForgotPassword)
+);
 userRouter.get(
-	"/me",
+	"/me", 
 	authenticate("user"),
 	asyncWrap(UserController.getMe)
 );
