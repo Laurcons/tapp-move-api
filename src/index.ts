@@ -9,6 +9,8 @@ import handleErrors from "./middlewares/error-handler";
 import handleNotFound from "./middlewares/not-found-handler";
 import { setValidationLogger } from "./middlewares/validation-middleware";
 import { inits3 } from "./aws";
+import viewsRouter from "./routes/views-router";
+import mustacheExpress from "mustache-express";
 
 Config.init();
 
@@ -17,6 +19,12 @@ const app = express();
 // we don't use Config.get here because it might not exist:
 //  it is only supplied by Heroku
 const PORT = process.env.PORT ?? 8000;
+
+// configure pages
+app.engine("mst", mustacheExpress());
+app.set("view engine", "mst");
+app.set("views", "./src/views");
+app.use("/pages", viewsRouter);
 
 app.use(express.json());
 app.use(morgan(Config.get("MORGAN_MODE")));
