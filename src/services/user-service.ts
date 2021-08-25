@@ -68,7 +68,7 @@ export default class UserService extends CrudService<User> {
 	};
 
 	login = async (email: string, password: string) => {
-		const user = await this.model.findOne({ email });
+		const user = await this.model.findOne({ email }).select("+password");
 		if (!user) throw ApiError.emailPasswordIncorrect;
 		if (!(await this.verifyPassword(password, user.password)))
 			throw ApiError.emailPasswordIncorrect;

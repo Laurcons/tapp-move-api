@@ -9,6 +9,7 @@ import ApiError from '../errors/api-error';
 
 export default function authenticate(type: "user" | "admin") {
     return asyncWrap(async (req: Request, res: Response, next: NextFunction) => {
+        // TODO: update exception handling to newer standards
         const sessionService = new SessionService();
         // find the jwt
         if (!req.headers.authorization)

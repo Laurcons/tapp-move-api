@@ -48,7 +48,7 @@ class UserController {
 		const { jwt, user } = await this.userService.login(email, password);
 		res.json({
 			status: "success",
-			user: redact(user.toObject(), "password"),
+			user,
 			token: jwt,
 		});
 	};
@@ -69,7 +69,7 @@ class UserController {
 	) => {
 		res.json({
 			status: "success",
-			user: redact(req.session.user, "password").toObject(),
+			user: redact(req.session.user.toObject(), "password"),
 		});
 	};
 

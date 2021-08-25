@@ -3,12 +3,12 @@ import {
 	getIdValidator,
 	pingValidator,
 	startRideValidator,
-	toggleLockValidator,
 } from "./scooter-validators";
 import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
 import ScooterController from "./scooter-controller";
+import RideController from "./../ride/ride-controller";
 import validate from "../../middlewares/validation-middleware";
 
 const scooterRouter = express.Router();
@@ -29,19 +29,13 @@ scooterRouter.post(
 	"/:code/startRide",
 	authenticate("user"),
 	validate(startRideValidator),
-	asyncWrap(ScooterController.startRide)
+	asyncWrap(RideController.startRide)
 );
 scooterRouter.post(
 	"/:code/ping",
 	authenticate("user"),
 	validate(pingValidator),
 	asyncWrap(ScooterController.ping)
-);
-scooterRouter.post(
-	"/:code/toggleLock",
-	authenticate("user"),
-	validate(toggleLockValidator),
-	asyncWrap(ScooterController.toggleLock)
 );
 
 export default scooterRouter;

@@ -38,23 +38,6 @@ class ScooterController {
         });
     };
 
-	startRide = async (
-		// just to be clear:     PARAMS                    BODY                            QUERY
-		req: express.Request<{ code: string }, {}, { location?: [number, number] }, { isNFC?: string }>,
-		res: express.Response<{ status: string; ride: Ride }>
-	) => {
-		const ride = await this.scooterService.startRide(
-			req.session.user,
-			req.params.code,
-			req.body.location,
-			!!req.query.isNFC
-		);
-		res.json({
-			status: "success",
-			ride
-		});
-	}
-
 	ping = async (
 		req: express.Request<{ code: string; }, {}, { location: [number, number]}>,
 		res: express.Response<{ status: string; successful: boolean; }>
@@ -65,18 +48,6 @@ class ScooterController {
 		res.json({
 			status: "success",
 			successful
-		});
-	}
-
-	toggleLock = async (
-		req: express.Request<{ code: string; }, {}, { lock: boolean; }>,
-		res: express.Response<{ status: string; }>
-	) => {
-		const { code } = req.params;
-		const { lock } = req.body;
-		await this.scooterService.toggleLock(code, req.session.user, lock);
-		res.json({
-			status: "success"
 		});
 	}
 }

@@ -13,7 +13,10 @@ export interface User extends mongoose.Document {
 export const userSchema = new mongoose.Schema({
 	email: String,
 	username: String,
-	password: String,
+	password: {
+		type: String,
+		select: false
+	},
 	lastLoginAt: {
 		type: Date,
 		default: Date.now,

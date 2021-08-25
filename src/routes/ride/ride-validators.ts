@@ -7,3 +7,9 @@ export const getCurrentValidator = Joi.object({
             .required()
     })
 });
+
+export const toggleLockValidator = Joi.object({
+	body: Joi.object({
+		lock: Joi.bool().required(),
+	}),
+});
