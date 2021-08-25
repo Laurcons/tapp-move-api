@@ -89,7 +89,7 @@ export default class UserService extends CrudService<User> {
 			email?: string;
 			password?: string;
 			username?: string;
-			oldPassword?: string;
+			oldPassword: string;
 		}
 	) => {
 		// const updateObject: Record<string, string> = {};
@@ -100,9 +100,7 @@ export default class UserService extends CrudService<User> {
 			}
 		}
 		let hashedPassword = undefined;
-		// they will always be both present due to validation
-		// but we do this to make TS shut up
-		if (password && oldPassword) {
+		if (password) {
 			if (!(await this.verifyPassword(oldPassword, user.password))) {
 				throw ApiError.passwordIncorrect;
 			}

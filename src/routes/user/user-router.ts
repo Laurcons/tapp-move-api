@@ -1,11 +1,9 @@
+import { UpdateBodyDTO } from './user-dto';
 import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
 import UserController from "./user-controller";
 import validate from "../../middlewares/validation-middleware";
-import {
-	updateValidator,
-} from "./user-validators";
 import validateDTO from "../../middlewares/validate-dto-middleware";
 import multer from 'multer';
 
@@ -18,8 +16,8 @@ userRouter.get(
 );
 userRouter.patch(
 	"/me",
-	authenticate("user"),
-	validate(updateValidator),
+	authenticate("user", { withPassword: true }),
+	validateDTO({ body: UpdateBodyDTO }),
 	asyncWrap(UserController.update)
 );
 userRouter.post(

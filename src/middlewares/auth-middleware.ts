@@ -9,7 +9,7 @@ import { Logger } from '../logger';
 
 let _logger: Logger | null = null;
 
-export default function authenticate(type: "user" | "admin") {
+export default function authenticate(type: "user" | "admin", options?: { withPassword?: boolean; }) {
     return asyncWrap(async (req: Request, res: Response, next: NextFunction) => {
         // TODO: update exception handling to newer standards
         const sessionService = new SessionService();
@@ -33,7 +33,7 @@ export default function authenticate(type: "user" | "admin") {
             throw ApiError.invalidToken;
         // now find the user
         if (type === "user") {
-            const session = await sessionService.findSessionForUser(userId);
+            const session = await sessionService.findSessionForUser(userId, options?.withPassword ?? false);
             if (!session || session.expires.getTime() < Date.now()) {
                 throw ApiError.invalidToken;
             }

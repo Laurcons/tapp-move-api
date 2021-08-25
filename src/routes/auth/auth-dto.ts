@@ -1,7 +1,7 @@
 import * as cv from "class-validator";
 
-const usernameRegex = /^[a-zA-Z0-9-_.]{3,16}$/;
-const passwordRegex = /^.{4,}$/;
+export const usernameRegex = /^[a-zA-Z0-9-_.]{3,16}$/;
+export const passwordRegex = /^.{4,}$/;
 
 export class RegisterBodyDTO {
 	@cv.IsString()
