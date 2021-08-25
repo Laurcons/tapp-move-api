@@ -13,15 +13,15 @@ import { passwordRegex, usernameRegex } from "../auth/auth-dto";
 export class UpdateBodyDTO {
     @cv.IsEmail()
     @cv.IsOptional()
-    email!: string;
+    email?: string;
 
     @cv.Matches(usernameRegex)
     @cv.IsOptional()
-    username!: string;
+    username?: string;
 
     @cv.Matches(passwordRegex)
     @cv.IsOptional()
-    password!: string;
+    password?: string;
 
     @cv.IsString()
     oldPassword!: string;
