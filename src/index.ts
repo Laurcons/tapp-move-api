@@ -11,6 +11,7 @@ import { setValidationLogger } from "./middlewares/validation-middleware";
 import { inits3 } from "./aws";
 import viewsRouter from "./routes/pages/pages-router";
 import mustacheExpress from "mustache-express";
+import { setAuthLogger } from "./middlewares/auth-middleware";
 
 Config.init();
 
@@ -40,6 +41,7 @@ const expressLogger = new Logger({prefix: "express"});
 
     expressLogger.log("Application started");
     setValidationLogger(new Logger({ prefix: "joi" }));
+    setAuthLogger(new Logger({ prefix: "auth" }));
     expressLogger.log("Connecting to database...");
     await mongoConnect();
     expressLogger.log("Initializing S3...");
