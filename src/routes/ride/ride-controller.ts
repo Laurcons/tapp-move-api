@@ -1,8 +1,9 @@
-import { StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
+import { PaginationQueryDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
 import { Ride } from "./ride-model";
 import { LeanDocument } from "mongoose";
+import { ValidationError } from "class-validator";
 
 class RideController {
 	rideService = new RideService();
@@ -11,6 +12,11 @@ class RideController {
 		req: Request<{}, {}, StartRideBodyDTO, StartRideQueryDTO>,
 		res: Response<{ status: string; ride: Ride }>
 	) => {
+		// if the isNFC flag is NOT set then we need to check the location
+		//  has been provided, because this is not caught by the DTO validation
+		if (!req.query.isNFC && !req.body.location) {
+			throw new ValidationError();
+		}
 		const ride = await this.rideService.startRide(
 			req.session.user,
 			req.body.code,
@@ -86,12 +92,15 @@ class RideController {
 	};
 
 	getHistory = async (
-		req: Request,
-		res: Response<{ status: string; rides: LeanDocument<Ride>[] }>
+		req: Request<{}, {}, {}, PaginationQueryDTO>,
+		res: Response<{ status: string; start: number; count: number; rides: LeanDocument<Ride>[] }>
 	) => {
-		const rides = await this.rideService.getHistory(req.session.user);
+		const start = parseInt(req.query.start ?? "0");
+		const count = parseInt(req.query.count ?? "20");
+		const rides = await this.rideService.getHistory(req.session.user, start, count);
 		res.json({
 			status: "success",
+			start, count,
 			rides,
 		});
 	};

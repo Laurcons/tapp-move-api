@@ -13,6 +13,22 @@ export default class RideService extends CrudService<Ride> {
 		super(RideModel);
 	}
 
+	private calculateRideInfo(ride: Ride, currentLocation: [number, number]) {
+		const linearDistance = getDistance(currentLocation, {
+			lat: ride.from.coordinates[1],
+			lon: ride.from.coordinates[0],
+		});
+		const duration =
+			-1 *
+			DateTime.fromJSDate(ride.startedAt).diffNow().as("milliseconds");
+		const price = Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute
+		return {
+			linearDistance,
+			duration,
+			price,
+		};
+	}
+
 	async isUserRiding(user: User): Promise<boolean> {
 		const result = await this.model.findOne({
 			userId: user._id,
@@ -27,18 +43,10 @@ export default class RideService extends CrudService<Ride> {
 			isFinished: false,
 		});
 		if (!ride) throw ApiError.rideNotFound;
-		const linearDistance = getDistance(currentLocation, {
-			lat: ride.from.coordinates[1],
-			lon: ride.from.coordinates[0],
-		});
-		const duration =
-			-1 *
-			DateTime.fromJSDate(ride.startedAt).diffNow().as("milliseconds");
-		const price = Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute
+		const details = this.calculateRideInfo(ride, currentLocation);
 		return {
-			linearDistance,
-			duration,
-            price
+			ride,
+			...details,
 		};
 	}
 
@@ -98,17 +106,9 @@ export default class RideService extends CrudService<Ride> {
 			isFinished: false,
 		});
 		if (!ride) throw ApiError.rideNotFound;
-		const linearDistance = getDistance(currentLocation, {
-			lat: ride.from.coordinates[1],
-			lon: ride.from.coordinates[0],
-		});
-		const duration =
-			-1 *
-			DateTime.fromJSDate(ride.startedAt).diffNow().as("milliseconds");
-		// calculate price
-		const price = Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute
+		const details = this.calculateRideInfo(ride, currentLocation);
 		// end
-		await this.model.updateOne(
+		const newRide = await this.model.findOneAndUpdate(
 			{ _id: ride._id },
 			{
 				$set: {
@@ -119,16 +119,16 @@ export default class RideService extends CrudService<Ride> {
 					isFinished: true,
 					endedAt: new Date(),
 				},
-			}
+			},
+			{ new: true, useFindAndModify: true }
 		);
 		await this.scooterService.updateOne(
 			{ _id: ride.scooterId },
 			{ $set: { isBooked: false, isUnlocked: true } }
 		);
 		return {
-			linearDistance,
-			duration,
-			price,
+			ride: newRide,
+			...details,
 		};
 	}
 
@@ -139,7 +139,9 @@ export default class RideService extends CrudService<Ride> {
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		// retrieve scooter
-		const scooter = await this.scooterService.findOne({ _id: ride.scooterId });
+		const scooter = await this.scooterService.findOne({
+			_id: ride.scooterId,
+		});
 		if (!scooter) throw ApiError.scooterNotFound;
 		// find ride with user
 		// update scooter n set locked
@@ -149,8 +151,12 @@ export default class RideService extends CrudService<Ride> {
 		);
 	}
 
-    async getHistory(user: User) {
-        const rides = await this.model.find({ userId: user._id, isFinished: true }).lean();
-        return rides;
-    }
+	async getHistory(user: User, start: number, count: number) {
+		const rides = await this.model
+			.find({ userId: user._id, isFinished: true })
+			.skip(start)
+			.limit(count)
+			.lean();
+		return rides;
+	}
 }
