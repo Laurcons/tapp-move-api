@@ -93,7 +93,7 @@ class RideController {
 
 	getHistory = async (
 		req: Request<{}, {}, {}, PaginationQueryDTO>,
-		res: Response<{ status: string; start: number; count: number; rides: LeanDocument<Ride>[] }>
+		res: Response<{ status: string; start: number; count: number; rides: Ride[] }>
 	) => {
 		const start = parseInt(req.query.start ?? "0");
 		const count = parseInt(req.query.count ?? "20");

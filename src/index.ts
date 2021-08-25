@@ -7,7 +7,6 @@ import Config from "./environment";
 import appRouter from "./routes/app-router";
 import handleErrors from "./middlewares/error-handler";
 import handleNotFound from "./middlewares/not-found-handler";
-import { setValidationLogger } from "./middlewares/validation-middleware";
 import { inits3 } from "./aws";
 import viewsRouter from "./routes/pages/pages-router";
 import mustacheExpress from "mustache-express";
@@ -40,7 +39,6 @@ const expressLogger = new Logger({prefix: "express"});
 (async function() {
 
     expressLogger.log("Application started");
-    setValidationLogger(new Logger({ prefix: "joi" }));
     setAuthLogger(new Logger({ prefix: "auth" }));
     expressLogger.log("Connecting to database...");
     await mongoConnect();

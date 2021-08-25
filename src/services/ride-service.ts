@@ -155,8 +155,7 @@ export default class RideService extends CrudService<Ride> {
 		const rides = await this.model
 			.find({ userId: user._id, isFinished: true })
 			.skip(start)
-			.limit(count)
-			.lean();
+			.limit(count);
 		return rides;
 	}
 }

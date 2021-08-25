@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { ValidationError as ValidationErrorJoi } from "joi";
-import { ValidationError as ValidationErrorDTO } from "class-validator";
+import { ValidationError } from "class-validator";
 import ApiError from "../errors/api-error";
 import { Logger } from "../logger";
 
@@ -20,15 +19,9 @@ export default function handleErrors(logger?: Logger) {
                 message: err.message,
                 relationId
             });
-        } else if (err instanceof ValidationErrorJoi) {
+        } else if (err instanceof ValidationError) {
             res.status(422).json({
-                status: "validation-error[joi]",
-                details: err.details,
-                relationId
-            });
-        } else if (err instanceof ValidationErrorDTO) {
-            res.status(422).json({
-				status: "validation-error[dto]",
+				status: "validation-error",
 				details: err,
 				relationId,
 			});
