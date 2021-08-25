@@ -1,4 +1,3 @@
-
 import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import RideController from "./ride-controller";
