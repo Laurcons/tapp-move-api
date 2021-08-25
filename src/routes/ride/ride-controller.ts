@@ -1,3 +1,4 @@
+import { StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
 import { Ride } from "./ride-model";
@@ -7,20 +8,14 @@ class RideController {
 	rideService = new RideService();
 
 	startRide = async (
-		// just to be clear  PARAMS                    BODY                      QUERY
-		req: Request<
-			{ code: string },
-			{},
-			{ location?: [number, number] },
-			{ isNFC?: string }
-		>,
+		req: Request<{}, {}, StartRideBodyDTO, StartRideQueryDTO>,
 		res: Response<{ status: string; ride: Ride }>
 	) => {
 		const ride = await this.rideService.startRide(
 			req.session.user,
-			req.params.code,
+			req.body.code,
 			req.body.location,
-			!!req.query.isNFC
+			req.query.isNFC === "true"
 		);
 		res.json({
 			status: "success",
@@ -92,14 +87,14 @@ class RideController {
 
 	getHistory = async (
 		req: Request,
-		res: Response<{ status: string; rides: LeanDocument<Ride>[]}>
+		res: Response<{ status: string; rides: LeanDocument<Ride>[] }>
 	) => {
 		const rides = await this.rideService.getHistory(req.session.user);
 		res.json({
 			status: "success",
-			rides
+			rides,
 		});
-	}
+	};
 }
 
 export default new RideController();

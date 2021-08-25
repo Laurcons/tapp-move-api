@@ -2,11 +2,17 @@ import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import RideController from "./ride-controller";
 import authenticate from "../../middlewares/auth-middleware";
-import { LocationQueryDTO, ToggleLockBodyDTO } from "./ride-dto";
+import { LocationQueryDTO, StartRideBodyDTO, StartRideQueryDTO, ToggleLockBodyDTO } from "./ride-dto";
 import validateDTO from "../../middlewares/validate-dto-middleware";
 
 const rideRouter = express.Router();
 
+rideRouter.post(
+	"/",
+	authenticate("user"),
+	validateDTO({ body: StartRideBodyDTO, query: StartRideQueryDTO }),
+	asyncWrap(RideController.startRide)
+);
 rideRouter.get("/current",
     authenticate("user"),
     validateDTO({ query: LocationQueryDTO }),

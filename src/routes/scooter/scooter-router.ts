@@ -3,8 +3,6 @@ import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
 import ScooterController from "./scooter-controller";
-import RideController from "./../ride/ride-controller";
-import validate from "../../middlewares/validation-middleware";
 import { FindNearQueryDTO, PingBodyDTO, ScooterCodeParamsDTO } from "./scooter-dto";
 import validateDTO from "../../middlewares/validate-dto-middleware";
 
@@ -21,12 +19,6 @@ scooterRouter.get(
 	authenticate("user"),
 	validateDTO({ params: ScooterCodeParamsDTO }),
 	asyncWrap(ScooterController.getId)
-);
-scooterRouter.post(
-	"/:code/startRide",
-	authenticate("user"),
-	validateDTO({ params: ScooterCodeParamsDTO }),
-	asyncWrap(RideController.startRide)
 );
 scooterRouter.post(
 	"/:code/ping",
