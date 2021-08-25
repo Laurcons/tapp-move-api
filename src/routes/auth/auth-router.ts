@@ -3,7 +3,11 @@ import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
 import validateDTO from "../../middlewares/validate-dto-middleware";
 import AuthController from "./auth-controller";
-import { LoginBodyDTO, RegisterBodyDTO } from "./auth-dto";
+import {
+	BeginForgotPasswordBodyDTO,
+	LoginBodyDTO,
+	RegisterBodyDTO,
+} from "./auth-dto";
 
 const authRouter = express.Router();
 
@@ -22,10 +26,10 @@ authRouter.post(
 	authenticate("user"),
 	asyncWrap(AuthController.logout)
 );
-// authRouter.post(
-// 	"/forgotPassword",
-// 	validate(forgotPasswordValidator),
-// 	asyncWrap(AuthController.beginForgotPassword)
-// );
+authRouter.post(
+	"/forgotPassword",
+	validateDTO({ body: BeginForgotPasswordBodyDTO }),
+	asyncWrap(AuthController.beginForgotPassword)
+);
 
 export default authRouter;

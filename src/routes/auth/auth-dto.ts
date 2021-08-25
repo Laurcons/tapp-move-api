@@ -22,3 +22,8 @@ export class LoginBodyDTO {
 	@cv.IsString()
 	password!: string;
 }
+
+export class BeginForgotPasswordBodyDTO {
+	@cv.IsEmail()
+	email!: string;
+}

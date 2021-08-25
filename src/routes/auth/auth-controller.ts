@@ -3,18 +3,14 @@ import { LeanDocument } from "mongoose";
 import SessionService from "../../services/session-service";
 import UserService from "../../services/user-service";
 import { User } from "../user/user-model";
-import { LoginBodyDTO } from "./auth-dto";
+import { BeginForgotPasswordBodyDTO, LoginBodyDTO, RegisterBodyDTO } from "./auth-dto";
 
 class AuthController {
 	userService = new UserService();
 	sessionService = new SessionService();
 
 	register = async (
-		req: express.Request<
-			{},
-			{},
-			{ username: string; email: string; password: string }
-		>,
+		req: express.Request<{}, {}, RegisterBodyDTO>,
 		res: express.Response<{
 			status: string;
 			token: string;
@@ -53,7 +49,7 @@ class AuthController {
 	};
 
 	logout = async (
-		req: express.Request<{}, {}, {}>,
+		req: express.Request,
 		res: express.Response<{ status: string }>
 	) => {
 		this.userService.logout(req.session.user);
@@ -63,7 +59,7 @@ class AuthController {
 	};
 
 	beginForgotPassword = async (
-		req: express.Request<{}, {}, { email: string }>,
+		req: express.Request<{}, {}, BeginForgotPasswordBodyDTO>,
 		res: express.Response
 	) => {
 		const { email } = req.body;
