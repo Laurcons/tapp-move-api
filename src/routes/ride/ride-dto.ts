@@ -8,7 +8,8 @@ export class StartRideBodyDTO {
     @cv.IsArray()
     @cv.IsNumber({}, { each: true })
     @cv.Length(2)
-    location!: [number, number];
+    @cv.IsOptional()
+    location?: [number, number];
 }
 
 export class StartRideQueryDTO {
