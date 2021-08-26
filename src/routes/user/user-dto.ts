@@ -1,15 +1,5 @@
 import * as cv from "class-validator";
 import { passwordRegex, usernameRegex } from "../auth/auth-dto";
-
-// export const updateValidator = Joi.object({
-// 	body: Joi.object({
-// 		email: Joi.string().email(),
-// 		username: Joi.string().regex(usernameRegex),
-// 		password: Joi.string().regex(passwordRegex),
-// 		oldPassword: Joi.string(),
-// 	}).with("password", "oldPassword"),
-// });
-
 export class UpdateBodyDTO {
     @cv.IsEmail()
     @cv.IsOptional()
@@ -25,4 +15,17 @@ export class UpdateBodyDTO {
 
     @cv.IsString()
     oldPassword!: string;
+}
+
+export class ResetPasswordBodyDTO {
+    @cv.IsString()
+    password!: string;
+
+    @cv.IsString()
+    token!: string;
+}
+
+export class ForgotPasswordBodyDTO {
+    @cv.IsEmail()
+    email!: string;
 }

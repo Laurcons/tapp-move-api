@@ -1,10 +1,13 @@
 
 import express from "express";
+import { asyncWrap } from "../../async-wrap";
+import PagesController from "./pages-controller";
 
 const viewsRouter = express.Router();
 
-viewsRouter.get("/test", (req, res) => {
-    res.render("test", {name:"BUBU"});
-});
+viewsRouter.get(
+    "/forgotPassword",
+    asyncWrap(PagesController.getForgotPassword)
+);
 
 export default viewsRouter;

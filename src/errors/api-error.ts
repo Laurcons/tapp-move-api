@@ -11,6 +11,7 @@ export default class ApiError extends Error {
     static invalidIdError = new ApiError(400, "invalid-id", "You supplied an invalid Id!");
     static emailNotAvailable = new ApiError(400, "email-not-available", "This email is not available.");
     static actionNotAllowed = new ApiError(403, "not-allowed", "You are not allowed to perform this action, with these parameters.");
+    static userNotFound = new ApiError(400, "user-not-found", "The user wasn't found!");
     /** Only thrown at login */
     static emailPasswordIncorrect = new ApiError(400, "email-password-incorrect", "Your email or password is incorrect!");
     static passwordIncorrect = new ApiError(400, "password-incorrect", "The password is incorrect");

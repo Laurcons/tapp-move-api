@@ -1,4 +1,4 @@
-import { UpdateBodyDTO } from './user-dto';
+import { UpdateBodyDTO, ResetPasswordBodyDTO, ForgotPasswordBodyDTO } from './user-dto';
 import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
@@ -24,6 +24,16 @@ userRouter.post(
 	authenticate("user"),
 	multer().single("image"),
 	asyncWrap(UserController.uploadDriversLicense)
+);
+userRouter.post(
+	"/forgotPassword",
+	validate({ body: ForgotPasswordBodyDTO }),
+	asyncWrap(UserController.forgotPassword)
+)
+userRouter.post(
+	"/resetPassword",
+	validate({ body: ResetPasswordBodyDTO}),
+	asyncWrap(UserController.resetPassword)
 );
 
 export default userRouter;

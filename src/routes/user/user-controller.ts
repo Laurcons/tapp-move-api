@@ -2,10 +2,8 @@ import express from "express";
 import UserService from "../../services/user-service";
 import { User } from "./user-model";
 import SessionService from "../../services/session-service";
-import { LeanDocument } from "mongoose";
-import redact from "../../redact";
 import ApiError from "../../errors/api-error";
-import { UpdateBodyDTO } from "./user-dto";
+import { ForgotPasswordBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from "./user-dto";
 
 class UserController {
 	userService = new UserService();
@@ -50,6 +48,29 @@ class UserController {
 		this.userService.uploadDriversLicense(req.session.user, req.file);
 		res.json({
 			status: "success",
+		});
+	};
+
+	forgotPassword = async (
+		req: express.Request<{}, {}, ForgotPasswordBodyDTO>,
+		res: express.Response<{ status: string; } & Record<string, string | undefined>>
+	) => {
+		const { email } = req.body;
+		const token = await this.userService.beginForgotPassword(email);
+		res.json({
+			status: "success",
+			"token-that-should-have-been-sent-through-email": token
+		});
+	};
+
+	resetPassword = async (
+		req: express.Request<{}, {}, ResetPasswordBodyDTO>,
+		res: express.Response<{ status: string; }>
+	) => {
+		const { token, password } = req.body;
+		await this.userService.updatePasswordWithToken(token, password);
+		res.json({
+			status: "success"
 		});
 	};
 }
