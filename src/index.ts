@@ -11,6 +11,7 @@ import { inits3 } from "./aws";
 import viewsRouter from "./routes/pages/pages-router";
 import mustacheExpress from "mustache-express";
 import { setAuthLogger } from "./middlewares/auth-middleware";
+import cors from "cors";
 
 Config.init();
 
@@ -28,6 +29,7 @@ app.use("/pages", viewsRouter);
 if (process.env.NODE_ENV !== "production")
     app.disable("view cache");
 
+app.use(cors());
 app.use(express.json());
 app.use(morgan(Config.get("MORGAN_MODE")));
 
