@@ -38,11 +38,17 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
                 throw ApiError.invalidToken;
             }
             // everything should be good now
-            _logger?.log(`User ${session.user.username} token ..${token.substr(-5)}`);
+            _logger?.log(`User ${session.user.username} token ...${token.substr(-5)}`);
             req.session = session;
             next();
-        } else {
-            throw new ApiError(500, "not-implemented");
+        } else if (type === "admin") {
+            const session = await sessionService.findSessionForAdmin(userId, options?.withPassword ?? false);
+            if (!session || session.expires.getTime() < Date.now()) {
+				throw ApiError.invalidToken;
+			}
+            _logger?.log(`Admin ${session.admin.email} token ...${token.substr(-5)}`);
+            req.session = session;
+            next();
         }
     });
 }

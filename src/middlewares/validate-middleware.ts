@@ -1,9 +1,9 @@
 import express from 'express';
-import { validate } from "class-validator";
+import { validate as cvValidate } from "class-validator";
 import { ClassConstructor, plainToClass } from 'class-transformer';
 import { asyncWrap } from '../async-wrap';
 
-export default function validateDTO<BodyT extends object, QueryT extends object, ParamsT extends object>(dto: {
+export default function validate<BodyT extends object, QueryT extends object, ParamsT extends object>(dto: {
     body?: ClassConstructor<BodyT>,
     query?: ClassConstructor<QueryT>,
     params?: ClassConstructor<ParamsT>
@@ -22,7 +22,7 @@ export default function validateDTO<BodyT extends object, QueryT extends object,
 
 async function validatePart<PartT extends object>(type: ClassConstructor<PartT>, contents: any) {
     const instance = plainToClass(type, contents);
-    const errors = await validate(instance);
+    const errors = await cvValidate(instance);
     if (errors.length > 0)
         throw errors[0];
 }

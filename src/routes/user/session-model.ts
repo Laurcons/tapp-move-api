@@ -1,5 +1,6 @@
 
 import mongoose from "mongoose";
+import { Admin, adminSchema } from "../admin/auth/admin-model";
 import { User, userSchema } from "./user-model";
 
 export interface Session extends mongoose.Document {
@@ -8,7 +9,7 @@ export interface Session extends mongoose.Document {
     expires: Date;
     type: "user" | "admin";
     user: User;
-    admin: never;
+    admin: Admin;
 }
 
 export const sessionSchema = new mongoose.Schema({
@@ -25,7 +26,14 @@ export const sessionSchema = new mongoose.Schema({
         type: Date,
         default: () => Date.now() + 1000 * 60 * 60 * 24 * 30 * 12 // 1 year
     },
-    user: userSchema
+    user: { 
+        type: userSchema,
+        required: false
+    },
+    admin: {
+        type: adminSchema,
+        required: false
+    },
 });
 
 export const SessionModel = mongoose.model<Session>("session", sessionSchema);

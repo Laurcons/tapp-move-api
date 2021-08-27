@@ -16,4 +16,15 @@ export default class SessionService extends CrudService<Session> {
 		const session = await sessionPromise;
         return session;
 	}
+
+	async findSessionForAdmin(id: string, withPassword?: boolean) {
+		const sessionPromise = this.model.findOne({
+			"admin._id": id,
+			type: "admin"
+		}).sort({ createdAt: -1 });
+		if (withPassword)
+			sessionPromise.select("+admin.password");
+		const session = await sessionPromise;
+		return session;
+	}
 }
