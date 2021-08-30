@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AdminAuthService } from "../../../services/admin-auth-service";
-import { Admin } from "./admin-model";
+import { Admin } from "../admin-account/admin-model";
 import { LoginBodyDTO } from "./auth-dto";
 
 class AdminAuthController {
@@ -28,6 +28,13 @@ class AdminAuthController {
             status: "success"
         });
     };
+
+	verifyToken = async (req: Request, res: Response) => {
+		// it's already handled by the auth middleware
+		res.json({
+			status: "success"
+		});
+	}
 }
 
 export default new AdminAuthController();

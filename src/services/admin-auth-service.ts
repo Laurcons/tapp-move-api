@@ -1,4 +1,4 @@
-import { Admin, AdminModel } from "../routes/admin/auth/admin-model";
+import { Admin, AdminModel } from "../routes/admin/admin-account/admin-model";
 import CrudService from "./crud-service";
 import bcrypt from "bcrypt";
 import ApiError from "../errors/api-error";
@@ -24,7 +24,7 @@ export class AdminAuthService extends CrudService<Admin> {
     }
 
     async login(email: string, password: string) {
-        const admin = await this.model.findOne({ email });
+        const admin = await this.model.findOne({ email }).select("+password");
         if (!admin)
             throw ApiError.userNotFound;
         if (!await this.verifyPassword(password, admin.password))

@@ -17,5 +17,10 @@ authRouter.post(
     authenticate("admin"),
     asyncWrap(AdminAuthController.logout)
 );
+authRouter.post(
+    "/verifyToken",
+    authenticate("admin"),
+    asyncWrap(AdminAuthController.verifyToken)
+);
 
 export default authRouter;
