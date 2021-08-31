@@ -2,7 +2,7 @@ import express from "express";
 import UserService from "../../services/user-service";
 import { User } from "./user-model";
 import SessionService from "../../services/session-service";
-import ApiError from "../../errors/api-error";
+import ApiError from "../../api-error";
 import { ForgotPasswordBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from "./user-dto";
 
 class UserController {

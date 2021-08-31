@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express"
 import { ValidationError } from "class-validator";
-import ApiError from "../errors/api-error";
+import ApiError from "../api-error";
 import { Logger } from "../logger";
 
 export default function handleErrors(logger?: Logger) {

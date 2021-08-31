@@ -2,7 +2,7 @@ import { Scooter, ScooterModel } from "../routes/scooter/scooter-model";
 import CrudService from "./crud-service-base";
 import mongoose from "mongoose";
 import { getDistance } from "geolib";
-import ApiError from "../errors/api-error";
+import ApiError from "../api-error";
 import RideService from "./ride-service";
 import { User } from "../routes/user/user-model";
 import { ScooterTcpService } from "./scooter-tcp-service";

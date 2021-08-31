@@ -4,7 +4,7 @@ import CrudService from "./crud-service-base";
 import bcrypt from "bcrypt";
 import SessionService from "./session-service";
 import Config from "../environment";
-import ApiError from "../errors/api-error";
+import ApiError from "../api-error";
 import cryptoRandomString from "crypto-random-string";
 import EmailService from "./email-service";
 import AwsService from "./aws-service";

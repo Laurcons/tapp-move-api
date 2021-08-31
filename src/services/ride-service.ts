@@ -1,6 +1,6 @@
 import { getDistance } from "geolib";
 import { DateTime } from "luxon";
-import ApiError from "../errors/api-error";
+import ApiError from "../api-error";
 import { PatchBodyDTO } from "../routes/ride/ride-dto";
 import { Ride, RideModel } from "../routes/ride/ride-model";
 import { User } from "../routes/user/user-model";

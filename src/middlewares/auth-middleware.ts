@@ -2,7 +2,7 @@ import { JWTP } from './../jwt-promise';
 
 import { Request, Response, NextFunction } from "express";
 import SessionService from "../services/session-service";
-import ApiError from '../errors/api-error';
+import ApiError from '../api-error';
 import { asyncWrap } from '../async-wrap';
 import Config from '../environment';
 import { Logger } from '../logger';

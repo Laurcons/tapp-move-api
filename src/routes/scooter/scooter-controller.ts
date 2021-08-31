@@ -1,5 +1,5 @@
 import express from "express";
-import ApiError from "../../errors/api-error";
+import ApiError from "../../api-error";
 import { Scooter } from "./scooter-model";
 import ScooterService from "../../services/scooter-service";
 import {

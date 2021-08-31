@@ -1,6 +1,6 @@
 
 import mongoose from "mongoose";
-import ApiError from "../errors/api-error";
+import ApiError from "../api-error";
 
 abstract class CrudService<Doc extends mongoose.Document> {
 	/**
