@@ -10,9 +10,15 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import cryptoRandomString from "crypto-random-string";
 import EmailService from "./email-service";
 
-export default class UserService extends CrudService<User> {
-	sessionService = new SessionService();
-	emailService = new EmailService();
+export default abstract class UserService extends CrudService<User> {
+	sessionService = SessionService.instance;
+	emailService = EmailService.instance;
+
+	private static _instance: UserService | null = null;
+	static get instance() {
+		if (!this._instance) this._instance = new UserServiceInstance();
+		return this._instance;
+	}
 
 	constructor() {
 		super(UserModel);
@@ -120,24 +126,20 @@ export default class UserService extends CrudService<User> {
 			throw new Error("This should never occur");
 		}
 		// update sessions
-		await this.sessionService.updateMany(
-			{ "user._id": user._id },
-			{
-				$set: {
-					user: {
-						...updates,
-						password: hashedPassword,
-					},
+		await this.sessionService.updateMany({ "user._id": user._id }, {
+			$set: {
+				user: {
+					...updates,
+					password: hashedPassword,
 				},
-			} as any
-		);
+			},
+		} as any);
 		return newUser;
 	};
 
 	beginForgotPassword = async (email: string) => {
 		const user = await this.model.findOne({ email });
-		if (!user)
-			return undefined;
+		if (!user) return undefined;
 		const token = cryptoRandomString({ length: 100 });
 		// send email
 		// await this.emailService.sendForgotPasswordEmail();
@@ -149,30 +151,32 @@ export default class UserService extends CrudService<User> {
 	findUserWithForgotPasswordToken = async (token: string) => {
 		const user = await this.model.findOne({ forgotPasswordToken: token });
 		return user;
-	}
+	};
 
 	updatePasswordWithToken = async (token: string, newPassword: string) => {
 		const user = await this.model.findOne({ forgotPasswordToken: token });
-		if (!user)
-			throw ApiError.userNotFound;
+		if (!user) throw ApiError.userNotFound;
 		user.password = await this.hashPassword(newPassword);
 		user.forgotPasswordToken = undefined;
 		// await this.sessionService.deleteOne({ userId: user._id });
 		await user.save();
-	}
+	};
 
 	uploadDriversLicense = async (user: User, image: Express.Multer.File) => {
 		const key = `driverslicense-${user._id}`;
 		const mime = image.mimetype;
-		await s3().send(new PutObjectCommand({
-			Bucket: Config.get("AWS_BUCKET"),
-			Key: key,
-			ContentType: mime,
-			Body: image.buffer
-		}));
+		await s3().send(
+			new PutObjectCommand({
+				Bucket: Config.get("AWS_BUCKET"),
+				Key: key,
+				ContentType: mime,
+				Body: image.buffer,
+			})
+		);
 		await this.model.updateOne(
 			{ _id: user._id },
 			{ $set: { driversLicenseKey: key } }
 		);
-	}
+	};
 }
+class UserServiceInstance extends UserService {}

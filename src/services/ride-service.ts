@@ -8,9 +8,15 @@ import CrudService from "./crud-service";
 import ScooterService from "./scooter-service";
 import { ScooterTcpService } from "./scooter-tcp-service";
 
-export default class RideService extends CrudService<Ride> {
-	private scooterService = new ScooterService();
+export default abstract class RideService extends CrudService<Ride> {
+	private scooterService = ScooterService.instance;
 	private tcpService = ScooterTcpService.instance;
+
+	private static _instance: RideService | null = null;
+	static get instance() {
+		if (!this._instance) this._instance = new RideServiceInstance();
+		return this._instance;
+	}
 
 	constructor() {
 		super(RideModel);
@@ -114,9 +120,10 @@ export default class RideService extends CrudService<Ride> {
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride, currentLocation);
-		const scooter = await this.scooterService.findOne({ _id: ride.scooterId });
-		if (!scooter) 
-			throw ApiError.scooterNotFound;
+		const scooter = await this.scooterService.findOne({
+			_id: ride.scooterId,
+		});
+		if (!scooter) throw ApiError.scooterNotFound;
 		// end physically
 		if (!scooter.code.startsWith("DMY")) {
 			await this.tcpService.lockScooter(scooter.lockId);
@@ -162,14 +169,12 @@ export default class RideService extends CrudService<Ride> {
 		if (!scooter.code.startsWith("DMY")) {
 			const { headlights, taillights } = settings;
 			if (lock !== undefined) {
-				if (lock)
-					await this.tcpService.lockScooter(scooter.lockId);
-				else
-					await this.tcpService.unlockScooter(scooter.lockId);
+				if (lock) await this.tcpService.lockScooter(scooter.lockId);
+				else await this.tcpService.unlockScooter(scooter.lockId);
 			}
 			await this.tcpService.modifyLights(scooter.lockId, {
 				head: headlights,
-				tail: taillights
+				tail: taillights,
 			});
 		}
 		// find ride with user
@@ -190,3 +195,4 @@ export default class RideService extends CrudService<Ride> {
 		return rides;
 	}
 }
+class RideServiceInstance extends RideService {}

@@ -4,7 +4,7 @@ import { Admin } from "../admin-account/admin-model";
 import { LoginBodyDTO } from "./auth-dto";
 
 class AdminAuthController {
-	private adminAuthService = new AdminAuthService();
+	private adminAuthService = AdminAuthService.instance;
 
 	login = async (
 		req: Request<{}, {}, LoginBodyDTO>,

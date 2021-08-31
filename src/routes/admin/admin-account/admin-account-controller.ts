@@ -1,7 +1,7 @@
 import { AdminAuthService } from "../../../services/admin-auth-service";
 
 class AdminAccountController {
-    private adminAuthService = new AdminAuthService();
+    private adminAuthService = AdminAuthService.instance;
 
 
 }

@@ -6,8 +6,15 @@ import { JWTP } from "../jwt-promise";
 import Config from "../environment";
 import SessionService from "./session-service";
 
-export class AdminAuthService extends CrudService<Admin> {
-    private sessionService = new SessionService();
+export abstract class AdminAuthService extends CrudService<Admin> {
+    private sessionService = SessionService.instance;
+
+    private static _instance: AdminAuthService | null = null;
+    static get instance() {
+        if (!this._instance)
+            this._instance = new AdminAuthServiceInstance();
+        return this._instance;
+    }
 
     constructor() {
         super(AdminModel);
@@ -50,5 +57,5 @@ export class AdminAuthService extends CrudService<Admin> {
             "admin._id": admin._id
         });
     }
-
 }
+class AdminAuthServiceInstance extends AdminAuthService {}

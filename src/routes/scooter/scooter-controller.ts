@@ -9,7 +9,7 @@ import {
 } from "./scooter-dto";
 
 class ScooterController {
-	scooterService = new ScooterService();
+	scooterService = ScooterService.instance;
 
 	findNear = async (
 		req: express.Request<{}, {}, {}, Partial<FindNearQueryDTO>>,

@@ -12,7 +12,7 @@ let _logger: Logger | null = null;
 export default function authenticate(type: "user" | "admin", options?: { withPassword?: boolean; }) {
     return asyncWrap(async (req: Request, res: Response, next: NextFunction) => {
         // TODO: update exception handling to newer standards
-        const sessionService = new SessionService();
+        const sessionService = SessionService.instance;
         const regex = /^Bearer ([a-zA-Z0-9-_.]+)$/;
         const regexResult = regex.exec(req.headers.authorization ?? "");
         if (!regexResult)

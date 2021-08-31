@@ -6,8 +6,8 @@ import ApiError from "../../errors/api-error";
 import { ForgotPasswordBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from "./user-dto";
 
 class UserController {
-	userService = new UserService();
-	sessionService = new SessionService();
+	userService = UserService.instance;
+	sessionService = SessionService.instance;
 
 	getMe = async (
 		req: express.Request,

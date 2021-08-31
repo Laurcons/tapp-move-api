@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import UserService from '../../services/user-service';
 import { ForgotPasswordTokenQueryDTO } from './pages-dto';
 class PagesController {
-    userService = new UserService();
+    userService = UserService.instance;
 
     getForgotPassword = async (
         req: Request,

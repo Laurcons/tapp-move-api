@@ -6,8 +6,8 @@ import { User } from "../user/user-model";
 import { BeginForgotPasswordBodyDTO, LoginBodyDTO, RegisterBodyDTO } from "./auth-dto";
 
 class AuthController {
-	userService = new UserService();
-	sessionService = new SessionService();
+	userService = UserService.instance;
+	sessionService = SessionService.instance;
 
 	register = async (
 		req: express.Request<{}, {}, RegisterBodyDTO>,

@@ -6,7 +6,7 @@ import { LeanDocument } from "mongoose";
 import { ValidationError } from "class-validator";
 
 class RideController {
-	rideService = new RideService();
+	rideService = RideService.instance;
 
 	startRide = async (
 		req: Request<{}, {}, StartRideBodyDTO, StartRideQueryDTO>,
