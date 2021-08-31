@@ -1,13 +1,16 @@
 import { getDistance } from "geolib";
 import { DateTime } from "luxon";
 import ApiError from "../errors/api-error";
+import { PatchBodyDTO } from "../routes/ride/ride-dto";
 import { Ride, RideModel } from "../routes/ride/ride-model";
 import { User } from "../routes/user/user-model";
 import CrudService from "./crud-service";
 import ScooterService from "./scooter-service";
+import { ScooterTcpService } from "./scooter-tcp-service";
 
 export default class RideService extends CrudService<Ride> {
 	private scooterService = new ScooterService();
+	private tcpService = ScooterTcpService.instance;
 
 	constructor() {
 		super(RideModel);
@@ -83,6 +86,10 @@ export default class RideService extends CrudService<Ride> {
 			);
 			if (dist > 80) throw ApiError.tooFarAway;
 		}
+		// unlock the actual scooter
+		if (!scooter.code.startsWith("DMY")) {
+			await this.tcpService.unlockScooter(scooter.lockId);
+		}
 		// mark scooter as booked
 		scooter.isBooked = true;
 		scooter.isUnlocked = true;
@@ -107,7 +114,14 @@ export default class RideService extends CrudService<Ride> {
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride, currentLocation);
-		// end
+		const scooter = await this.scooterService.findOne({ _id: ride.scooterId });
+		if (!scooter) 
+			throw ApiError.scooterNotFound;
+		// end physically
+		if (!scooter.code.startsWith("DMY")) {
+			await this.tcpService.lockScooter(scooter.lockId);
+		}
+		// end in db
 		const newRide = await this.model.findOneAndUpdate(
 			{ _id: ride._id },
 			{
@@ -120,7 +134,7 @@ export default class RideService extends CrudService<Ride> {
 					endedAt: new Date(),
 				},
 			},
-			{ new: true, useFindAndModify: true }
+			{ new: true, useFindAndModify: false }
 		);
 		await this.scooterService.updateOne(
 			{ _id: ride.scooterId },
@@ -132,7 +146,7 @@ export default class RideService extends CrudService<Ride> {
 		};
 	}
 
-	async toggleLock(user: User, lock: boolean) {
+	async updateRide(user: User, settings: PatchBodyDTO) {
 		const ride = await this.findOne({
 			userId: user._id,
 			isFinished: false,
@@ -143,12 +157,29 @@ export default class RideService extends CrudService<Ride> {
 			_id: ride.scooterId,
 		});
 		if (!scooter) throw ApiError.scooterNotFound;
+		const { lock } = settings;
+		// set on actual scooter
+		if (!scooter.code.startsWith("DMY")) {
+			const { headlights, taillights } = settings;
+			if (lock !== undefined) {
+				if (lock)
+					await this.tcpService.lockScooter(scooter.lockId);
+				else
+					await this.tcpService.unlockScooter(scooter.lockId);
+			}
+			await this.tcpService.modifyLights(scooter.lockId, {
+				head: headlights,
+				tail: taillights
+			});
+		}
 		// find ride with user
 		// update scooter n set locked
-		await this.scooterService.updateOne(
-			{ _id: scooter._id },
-			{ $set: { isUnlocked: !lock } }
-		);
+		if (lock !== undefined) {
+			await this.scooterService.updateOne(
+				{ _id: scooter._id },
+				{ $set: { isUnlocked: !lock } }
+			);
+		}
 	}
 
 	async getHistory(user: User, start: number, count: number) {

@@ -15,6 +15,5 @@ export class ScooterCodeParamsDTO {
 export class PingBodyDTO {
     @IsArray()
     @IsNumber({}, { each: true })
-    @Length(2)
     location!: [number, number];
 }

@@ -23,9 +23,18 @@ export class LocationQueryDTO {
 	location!: string;
 }
 
-export class ToggleLockBodyDTO {
-    @cv.IsBoolean()
-    lock!: boolean;
+export class PatchBodyDTO {
+	@cv.IsBoolean()
+	@cv.IsOptional()
+	lock?: boolean;
+
+	@cv.IsBoolean()
+	@cv.IsOptional()
+	headlights?: boolean;
+    
+	@cv.IsBoolean()
+	@cv.IsOptional()
+	taillights?: boolean;
 }
 
 export class PaginationQueryDTO {

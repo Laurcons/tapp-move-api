@@ -12,6 +12,7 @@ import viewsRouter from "./routes/pages/pages-router";
 import mustacheExpress from "mustache-express";
 import { setAuthLogger } from "./middlewares/auth-middleware";
 import cors from "cors";
+import { ScooterTcpService } from "./services/scooter-tcp-service";
 
 Config.init();
 
@@ -38,18 +39,23 @@ app.use("/api-v1", appRouter);
 app.use(handleNotFound());
 app.use(handleErrors(new Logger({prefix: "exception"})));
 
-const expressLogger = new Logger({prefix: "express"});
+const logger = new Logger({prefix: "init"});
 
 (async function() {
 
-    expressLogger.log("Application started");
+    logger.log("Application started");
     setAuthLogger(new Logger({ prefix: "auth" }));
-    expressLogger.log("Connecting to database...");
+    logger.log("Connecting to database...");
     await mongoConnect();
-    expressLogger.log("Initializing S3...");
+    logger.log("Initializing S3...");
     inits3();
+    logger.log("Connecting to scooter TCP server...");
+    await ScooterTcpService.instance.init(new Logger({ prefix: "TCP" }));
     await listenAsync();
-    expressLogger.log(`Listening on ${PORT}`.rainbow);
+    logger.log(`Listening on ${PORT}`.rainbow);
+    logger.log(`Sending scooter greetings...`);
+    await ScooterTcpService.instance.sendGreetings();
+    logger.log("Initialization successful");
 
 })();
 

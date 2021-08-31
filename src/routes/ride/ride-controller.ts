@@ -1,4 +1,4 @@
-import { PaginationQueryDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
+import { PaginationQueryDTO, PatchBodyDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
 import { Ride } from "./ride-model";
@@ -80,12 +80,11 @@ class RideController {
 		});
 	};
 
-	toggleLock = async (
-		req: Request<{}, {}, { lock: boolean }>,
+	patch = async (
+		req: Request<{}, {}, PatchBodyDTO>,
 		res: Response<{ status: string }>
 	) => {
-		const { lock } = req.body;
-		await this.rideService.toggleLock(req.session.user, lock);
+		await this.rideService.updateRide(req.session.user, req.body);
 		res.json({
 			status: "success",
 		});
