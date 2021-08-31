@@ -7,12 +7,12 @@ import Config from "./environment";
 import appRouter from "./routes/app-router";
 import handleErrors from "./middlewares/error-handler";
 import handleNotFound from "./middlewares/not-found-handler";
-import { inits3 } from "./aws";
 import viewsRouter from "./routes/pages/pages-router";
 import mustacheExpress from "mustache-express";
 import { setAuthLogger } from "./middlewares/auth-middleware";
 import cors from "cors";
 import { ScooterTcpService } from "./services/scooter-tcp-service";
+import AwsService from "./services/aws-service";
 
 Config.init();
 
@@ -48,7 +48,7 @@ const logger = new Logger({prefix: "init"});
     logger.log("Connecting to database...");
     await mongoConnect();
     logger.log("Initializing S3...");
-    inits3();
+    AwsService.instance.init();
     logger.log("Connecting to scooter TCP server...");
     await ScooterTcpService.instance.init(new Logger({ prefix: "TCP" }));
     await listenAsync();

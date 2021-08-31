@@ -1,18 +1,18 @@
 import { JWTP } from "./../jwt-promise";
 import { User, UserModel } from "../routes/user/user-model";
-import CrudService from "./crud-service";
+import CrudService from "./crud-service-base";
 import bcrypt from "bcrypt";
 import SessionService from "./session-service";
 import Config from "../environment";
 import ApiError from "../errors/api-error";
-import { s3 } from "../aws";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import cryptoRandomString from "crypto-random-string";
 import EmailService from "./email-service";
+import AwsService from "./aws-service";
 
 export default abstract class UserService extends CrudService<User> {
 	sessionService = SessionService.instance;
 	emailService = EmailService.instance;
+	awsService = AwsService.instance;
 
 	private static _instance: UserService | null = null;
 	static get instance() {
@@ -163,16 +163,7 @@ export default abstract class UserService extends CrudService<User> {
 	};
 
 	uploadDriversLicense = async (user: User, image: Express.Multer.File) => {
-		const key = `driverslicense-${user._id}`;
-		const mime = image.mimetype;
-		await s3().send(
-			new PutObjectCommand({
-				Bucket: Config.get("AWS_BUCKET"),
-				Key: key,
-				ContentType: mime,
-				Body: image.buffer,
-			})
-		);
+		const key = await this.awsService.uploadDriversLicense(user._id, image);
 		await this.model.updateOne(
 			{ _id: user._id },
 			{ $set: { driversLicenseKey: key } }

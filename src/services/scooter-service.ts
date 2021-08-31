@@ -1,5 +1,5 @@
 import { Scooter, ScooterModel } from "../routes/scooter/scooter-model";
-import CrudService from "./crud-service";
+import CrudService from "./crud-service-base";
 import mongoose from "mongoose";
 import { getDistance } from "geolib";
 import ApiError from "../errors/api-error";

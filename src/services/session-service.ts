@@ -1,5 +1,5 @@
 import { Session, SessionModel } from "../routes/user/session-model";
-import CrudService from "./crud-service";
+import CrudService from "./crud-service-base";
 
 export default abstract class SessionService extends CrudService<Session> {
 	private static _instance: SessionService | null = null;

@@ -4,7 +4,7 @@ import ApiError from "../errors/api-error";
 import { PatchBodyDTO } from "../routes/ride/ride-dto";
 import { Ride, RideModel } from "../routes/ride/ride-model";
 import { User } from "../routes/user/user-model";
-import CrudService from "./crud-service";
+import CrudService from "./crud-service-base";
 import ScooterService from "./scooter-service";
 import { ScooterTcpService } from "./scooter-tcp-service";
 

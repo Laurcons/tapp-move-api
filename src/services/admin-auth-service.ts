@@ -1,5 +1,5 @@
 import { Admin, AdminModel } from "../routes/admin/admin-account/admin-model";
-import CrudService from "./crud-service";
+import CrudService from "./crud-service-base";
 import bcrypt from "bcrypt";
 import ApiError from "../errors/api-error";
 import { JWTP } from "../jwt-promise";
