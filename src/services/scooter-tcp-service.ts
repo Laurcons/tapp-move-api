@@ -73,13 +73,14 @@ export abstract class ScooterTcpService {
         let matchTEMP;
         try {
 		    matchTEMP = parser.exec(data.toString("ascii"));
+			if (!matchTEMP) {
+				throw new Error("Invalid response from TCP");
+			}
         } catch (ex) {
             this._logger?.log("Invalid message received: parsing aborted".red);
+			return;
         }
-        const match = matchTEMP;
-		if (!match || !match.groups) {
-			throw new Error("Invalid response from TCP");
-		}
+        const match = matchTEMP as Required<RegExpExecArray>;
 		const vendor = match.groups["vendor"];
 		const lockId = match.groups["lockId"];
 		const command = match.groups["cmd"];
@@ -93,11 +94,11 @@ export abstract class ScooterTcpService {
 		});
 	}
 
-	private async handleHeartbeat(msg: ScooterMessage) {
+	private async handleH0(msg: ScooterMessage) {
 		// log
 		const [lockStatus, voltage, signal, power, charging] = msg.params;
 		this._logger?.log(
-			`H0 from ${msg.lockId}: `.blue +
+			`H0 from ${msg.lockId}: `.magenta +
 				`${lockStatus === "0" ? "unlocked" : "locked"} ` +
 				`${voltage.slice(0, -2)}.${voltage.slice(1)}V ` +
 				`${signal}/32 ` +
@@ -111,10 +112,31 @@ export abstract class ScooterTcpService {
 		});
 	}
 
+	private handleS6(msg: ScooterMessage) {
+		// log
+		const [power, mode, speed, charging, voltage,, lockStatus, signal] = msg.params;
+		const modeStr =
+			mode === "1" ? "low" :
+			mode === "2" ? "med" :
+			mode === "3" ? "high" : "?";
+		this._logger?.log(
+			`S6 from ${msg.lockId}: `.magenta +
+				`${power}% ` +
+				`${modeStr}-speed-mode ` +
+				`${speed}kmh ` +
+				`${charging === "1" ? "charging" : "not-charging"} ` +
+				`${voltage.slice(0,-2)}.${voltage.slice(-2)}V ` +
+				`${lockStatus === "0" ? "unlocked" : "locked"} ` +
+				`${signal}/32`
+		);
+	}
+
 	private handleParsedMessage(message: ScooterMessage) {
 		if (message.command === "H0")
 			// don't await
-			this.handleHeartbeat(message);
+			this.handleH0(message);
+		else if (message.command === "S6")
+			this.handleS6(message);
 		// call handlers
 		const key = message.lockId + message.command;
 		const handlers = this._eventQueue[key];
