@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface Ride extends mongoose.Document {
+    status: "ongoing" | "payment-pending" | "completed";
 	from: {
 		type: "Point";
 		coordinates: [number, number];
@@ -13,10 +14,13 @@ export interface Ride extends mongoose.Document {
     endedAt?: Date;
 	scooterId: mongoose.Types.ObjectId;
 	userId: mongoose.Types.ObjectId;
-	isFinished: boolean;
 }
 
 export const rideSchema = new mongoose.Schema({
+    status: {
+        type: String,
+        enum: [ "ongoing", "payment-pending", "completed" ],
+    },
     from: {
         type: { type: String },
         coordinates: [Number, Number]
@@ -35,8 +39,7 @@ export const rideSchema = new mongoose.Schema({
         required: false
     },
     scooterId: mongoose.Types.ObjectId,
-    userId: mongoose.Types.ObjectId,
-    isFinished: Boolean
+    userId: mongoose.Types.ObjectId
 });
 
 export const RideModel = mongoose.model<Ride>("ride", rideSchema);

@@ -43,7 +43,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async isUserRiding(user: User): Promise<boolean> {
 		const result = await this.model.findOne({
 			userId: user._id,
-			isFinished: false,
+			status: "ongoing"
 		});
 		return !!result;
 	}
@@ -51,7 +51,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async getCurrentRide(user: User, currentLocation: [number, number]) {
 		const ride = await this.model.findOne({
 			userId: user._id,
-			isFinished: false,
+			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride, currentLocation);
@@ -108,7 +108,7 @@ export default abstract class RideService extends CrudService<Ride> {
 				type: "Point",
 				coordinates: scooter.location.coordinates,
 			},
-			isFinished: false,
+			status: "ongoing",
 			scooterId: scooter._id,
 			userId: user._id,
 		});
@@ -118,7 +118,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async endCurrentRide(user: User, currentLocation: [number, number]) {
 		const ride = await this.model.findOne({
 			userId: user._id,
-			isFinished: false,
+			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride, currentLocation);
@@ -162,7 +162,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async updateRide(user: User, settings: PatchBodyDTO) {
 		const ride = await this.findOne({
 			userId: user._id,
-			isFinished: false,
+			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		// retrieve scooter
@@ -183,7 +183,6 @@ export default abstract class RideService extends CrudService<Ride> {
 				tail: taillights,
 			});
 		}
-		// find ride with user
 		// update scooter n set locked
 		if (lock !== undefined) {
 			await this.scooterService.updateOne(
@@ -195,7 +194,7 @@ export default abstract class RideService extends CrudService<Ride> {
 
 	async getHistory(user: User, start: number, count: number) {
 		const rides = await this.model
-			.find({ userId: user._id, isFinished: true })
+			.find({ userId: user._id, status: "ongoing" })
 			.skip(start)
 			.limit(count);
 		return rides;
