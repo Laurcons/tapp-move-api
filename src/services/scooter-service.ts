@@ -18,23 +18,27 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 
 	constructor() {
 		super(ScooterModel);
-		this.tcpService.onScooterNeedsUpdate.on((data) => {
-			const { lockId, batteryLevel, isUnlocked } = data;
+		this.tcpService.onScooterNeedsUpdate.on(async (data) => {
+			const { lockId, batteryLevel, isUnlocked, isCharging } = data;
+			// console.log(data);
+			// const scoot = await this.findOne({ lockId });
+			// console.log(scoot);
 			// don't await
-			this.updateOne(
-				{ lockId: lockId },
+			await this.updateOne(
+				{ lockId },
 				{
 					$set: {
 						batteryLevel,
 						isUnlocked,
+						isCharging
 					},
 				}
 			);
 		});
-		this.tcpService.onScooterNeedsLocationUpdate.on((data) => {
+		this.tcpService.onScooterNeedsLocationUpdate.on(async (data) => {
 			const { lockId, location } = data;
 			// don't await
-			this.updateOne(
+			await this.updateOne(
 				{ lockId },
 				{ $set: { "location.coordinates": location } }
 			);

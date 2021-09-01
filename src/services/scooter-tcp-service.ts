@@ -20,6 +20,7 @@ export interface ScooterNeedsUpdateEvent {
     lockId: string;
     batteryLevel: number;
     isUnlocked: boolean;
+	isCharging: boolean;
 };
 
 export interface ScooterNeedsLocationUpdateEvent {
@@ -28,11 +29,10 @@ export interface ScooterNeedsLocationUpdateEvent {
 }
 
 export abstract class ScooterTcpService {
+
 	private static _instance: ScooterTcpService | null;
 	static get instance() {
-		if (!this._instance) {
-			this._instance = new ScooterTcpServiceInstance();
-		}
+		if (!this._instance) this._instance = new ScooterTcpServiceInstance();
 		return this._instance;
 	}
 
@@ -101,15 +101,16 @@ export abstract class ScooterTcpService {
 		this._logger?.log(
 			`H0 from ${msg.lockId}: `.magenta +
 				`${lockStatus === "0" ? "unlocked" : "locked"} ` +
-				`${voltage.slice(0, -2)}.${voltage.slice(1)}V ` +
+				`${voltage.substr(0, 1)}.${voltage.substr(1)}V ` +
 				`${signal}/32 ` +
 				`${power}% ` +
 				`${charging === "0" ? "not-charging" : "charging"}`
 		);
 		this.onScooterNeedsUpdate.emit({
 			lockId: msg.lockId,
-			batteryLevel: parseInt(msg.params[0]),
-			isUnlocked: msg.params[6] === "0",
+			batteryLevel: parseInt(power),
+			isUnlocked: lockStatus === "0",
+			isCharging: charging === "1"
 		});
 	}
 
@@ -131,15 +132,16 @@ export abstract class ScooterTcpService {
 				`${modeStr}-speed-mode ` +
 				`${speed}kmh ` +
 				`${charging === "1" ? "charging" : "not-charging"} ` +
-				`${voltage.slice(0, -2)}.${voltage.slice(-2)}V ` +
+				`${voltage.substr(0, 1)}.${voltage.substr(1)}V ` +
 				`${lockStatus === "0" ? "unlocked" : "locked"} ` +
 				`${signal}/32`
 		);
 		// push to scooter
 		this.onScooterNeedsUpdate.emit({
 			lockId: msg.lockId,
-			batteryLevel: parseInt(msg.params[0]),
-			isUnlocked: msg.params[6] === "0",
+			batteryLevel: parseInt(power),
+			isUnlocked: lockStatus === "0",
+			isCharging: charging === "1"
 		});
 	}
 
@@ -154,7 +156,7 @@ export abstract class ScooterTcpService {
 		}
 		const coords = decimalMinutesToDecimalDegrees([
 			[parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2))],
-			[parseInt(lonStr.substr(0, 2)), parseFloat(lonStr.slice(2))],
+			[parseInt(lonStr.substr(0, 3)), parseFloat(lonStr.slice(2))],
 		]);
 		this._logger?.log(`Scooter said it's at ${coords}`);
 		// push to scooter
@@ -200,7 +202,7 @@ export abstract class ScooterTcpService {
 		this._eventQueue[key].enqueue((m) => handler(m));
 	}
 
-	private async sendCommandAndWait(message: Omit<ScooterMessage, "vendor">) {
+	private async sendCommandAndWait(message: Omit<ScooterMessage, "vendor">, options?: { timeoutMs?: number }) {
 		return new Promise<ScooterMessage>((resolve, reject) => {
 			let isPending = true;
 			this.addToQueue(message.lockId, message.command, (m) => {
@@ -214,7 +216,7 @@ export abstract class ScooterTcpService {
 					`Timeout while waiting for ${message.command} from ${message.lockId}`
 						.red
 				);
-			}, RESPONSE_TIMEOUT);
+			}, options?.timeoutMs ?? RESPONSE_TIMEOUT);
 			// don't await
 			this.sendCommand(message);
 		});
@@ -248,7 +250,7 @@ export abstract class ScooterTcpService {
 				command: "D0",
 				lockId,
 				params: [],
-			}).catch(() => {});
+			}, { timeoutMs: 60 * 1000 }).catch(() => {});
 		}
 	}
 

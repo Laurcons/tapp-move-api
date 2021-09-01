@@ -15,6 +15,12 @@ import { setAuthLogger } from "./middlewares/auth-middleware";
 import cors from "cors";
 import { ScooterTcpService } from "./services/scooter-tcp-service";
 import AwsService from "./services/aws-service";
+import { AdminAuthService } from "./services/admin-auth-service";
+import EmailService from "./services/email-service";
+import RideService from "./services/ride-service";
+import ScooterService from "./services/scooter-service";
+import SessionService from "./services/session-service";
+import UserService from "./services/user-service";
 
 const app = express();
 
@@ -49,11 +55,19 @@ const logger = new Logger({ prefix: "init" });
 	AwsService.instance.init();
 	logger.log("Connecting to scooter TCP server...");
 	await ScooterTcpService.instance.init(new Logger({ prefix: "TCP" }));
+	logger.log("Creating service instances...");
+	AdminAuthService.instance;
+	AwsService.instance;
+	EmailService.instance;
+	RideService.instance;
+	ScooterService.instance;
+	SessionService.instance;
+	UserService.instance;
 	await listenAsync();
 	logger.log(`Listening on ${PORT}`.rainbow);
 	logger.log(`Sending scooter greetings...`);
 	await ScooterTcpService.instance.sendGreetings();
-	logger.log("Initialization successful");
+	logger.log("Initialization finished");
 })();
 
 function listenAsync() {

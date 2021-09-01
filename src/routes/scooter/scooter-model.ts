@@ -8,6 +8,7 @@ export interface Scooter extends mongoose.Document {
 		coordinates: [number, number];
 	};
     batteryLevel: number;
+    isCharging: boolean;
     isUnlocked: boolean;
     isBooked: boolean;
 }
