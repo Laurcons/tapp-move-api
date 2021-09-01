@@ -41,38 +41,29 @@ export abstract class ScooterTcpService {
 	/** An array of ONCE event handlers attached to specific lockids and commands from the server */
 	private _eventQueue: Record<string, Queue<MessageHandler>> = {};
 
-    public onScooterNeedsUpdate = new TypedEvent<ScooterNeedsUpdateEvent>();
-	public onScooterNeedsLocationUpdate = new TypedEvent<ScooterNeedsLocationUpdateEvent>();
+	public onScooterNeedsUpdate = new TypedEvent<ScooterNeedsUpdateEvent>();
+	public onScooterNeedsLocationUpdate =
+		new TypedEvent<ScooterNeedsLocationUpdateEvent>();
 
 	async init(logger?: Logger) {
 		this._logger = logger ?? null;
-		await this.connectInSock();
-	}
-
-	private async connectInSock() {
-		this._sock = await this.createConnection();
 		this._sock.setKeepAlive(true);
 		this._sock.on("data", (b) => this.handleRawData(b));
 		this._sock.on("close", (hadError) => {
 			this._logger?.log(
 				`Connection closed ${hadError ? "with error" : ""}`.red
 			);
-            this.connectInSock();
+			this.connect();
 		});
+		this.connect();
 	}
 
-    private createConnection() {
-        this._logger?.log("Creating connection".green);
-		return new Promise<net.Socket>((resolve) => {
-            const conn: net.Socket = createConnection(
-				{
-					host: Config.get("TCP_HOST"),
-					port: parseInt(Config.get("TCP_PORT")),
-				},
-				() => resolve(conn)
-			);
+	private async connect() {
+		this._sock.connect({
+			host: Config.get("TCP_HOST"),
+			port: parseInt(Config.get("TCP_PORT")),
 		});
-    }
+	}
 
 	private handleRawData(data: Buffer) {
 		this._logger?.log("RECV".blue, data.toString("ascii").slice(0, -1));
@@ -80,17 +71,17 @@ export abstract class ScooterTcpService {
 		// puts OM into 'vendor', 123456789012345 into 'lockId', L0 into 'cmd' and ", 123, 123, 123" into 'params'
 		const parser =
 			/\*SCOR\,\s*(?<vendor>[A-Z]{2})\,\s*(?<lockId>[0-9]{15})\,\s*(?<cmd>[A-Z0-9]{2})(?<params>(\,[A-Za-z0-9.]*)*)\#\n/;
-        let matchTEMP;
-        try {
-		    matchTEMP = parser.exec(data.toString("ascii"));
+		let matchTEMP;
+		try {
+			matchTEMP = parser.exec(data.toString("ascii"));
 			if (!matchTEMP) {
 				throw new Error("Invalid response from TCP");
 			}
-        } catch (ex) {
-            this._logger?.log("Invalid message received: parsing aborted".red);
+		} catch (ex) {
+			this._logger?.log("Invalid message received: parsing aborted".red);
 			return;
-        }
-        const match = matchTEMP as Required<RegExpExecArray>;
+		}
+		const match = matchTEMP as Required<RegExpExecArray>;
 		const vendor = match.groups["vendor"];
 		const lockId = match.groups["lockId"];
 		const command = match.groups["cmd"];
@@ -115,7 +106,7 @@ export abstract class ScooterTcpService {
 				`${power}% ` +
 				`${charging === "0" ? "not-charging" : "charging"}`
 		);
-        this.onScooterNeedsUpdate.emit({ 
+		this.onScooterNeedsUpdate.emit({
 			lockId: msg.lockId,
 			batteryLevel: parseInt(msg.params[0]),
 			isUnlocked: msg.params[6] === "0",
@@ -124,18 +115,23 @@ export abstract class ScooterTcpService {
 
 	private handleS6(msg: ScooterMessage) {
 		// log
-		const [power, mode, speed, charging, voltage,, lockStatus, signal] = msg.params;
+		const [power, mode, speed, charging, voltage, , lockStatus, signal] =
+			msg.params;
 		const modeStr =
-			mode === "1" ? "low" :
-			mode === "2" ? "med" :
-			mode === "3" ? "high" : "?";
+			mode === "1"
+				? "low"
+				: mode === "2"
+				? "med"
+				: mode === "3"
+				? "high"
+				: "?";
 		this._logger?.log(
 			`S6 from ${msg.lockId}: `.magenta +
 				`${power}% ` +
 				`${modeStr}-speed-mode ` +
 				`${speed}kmh ` +
 				`${charging === "1" ? "charging" : "not-charging"} ` +
-				`${voltage.slice(0,-2)}.${voltage.slice(-2)}V ` +
+				`${voltage.slice(0, -2)}.${voltage.slice(-2)}V ` +
 				`${lockStatus === "0" ? "unlocked" : "locked"} ` +
 				`${signal}/32`
 		);
@@ -148,29 +144,39 @@ export abstract class ScooterTcpService {
 	}
 
 	private handlePositionMessage(msg: ScooterMessage) {
-		const [,, validFlag1, latStr,, lonStr,,,,,, validFlag2 ] = msg.params;
+		const [, , validFlag1, latStr, , lonStr, , , , , , validFlag2] =
+			msg.params;
 		if (validFlag1 !== "A" || validFlag2 === "N") {
-			this._logger?.log("Scooter remarked that it doesn't know where it is");
+			this._logger?.log(
+				"Scooter remarked that it doesn't know where it is"
+			);
 			return;
 		}
 		const coords = decimalMinutesToDecimalDegrees([
-			[ parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2)) ],
-			[ parseInt(lonStr.substr(0, 2)), parseFloat(lonStr.slice(2))]
+			[parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2))],
+			[parseInt(lonStr.substr(0, 2)), parseFloat(lonStr.slice(2))],
 		]);
+		this._logger?.log(`Scooter said it's at ${coords}`);
 		// push to scooter
 		this.onScooterNeedsLocationUpdate.emit({
 			lockId: msg.lockId,
-			location: coords
+			location: coords,
 		});
 	}
 
 	private handleParsedMessage(message: ScooterMessage) {
 		// do handling for special messages
 		switch (message.command) {
-			case "H0": this.handleH0(message); break;
-			case "S6": this.handleS6(message); break;
+			case "H0":
+				this.handleH0(message);
+				break;
+			case "S6":
+				this.handleS6(message);
+				break;
 			case "D0": // fall through
-			case "D1": this.handlePositionMessage(message); break;
+			case "D1":
+				this.handlePositionMessage(message);
+				break;
 		}
 		// call handlers
 		const key = message.lockId + message.command;
@@ -197,31 +203,34 @@ export abstract class ScooterTcpService {
 	private async sendCommandAndWait(message: Omit<ScooterMessage, "vendor">) {
 		return new Promise<ScooterMessage>((resolve, reject) => {
 			let isPending = true;
-            this.addToQueue(message.lockId, message.command, (m) => {
+			this.addToQueue(message.lockId, message.command, (m) => {
 				isPending = false;
 				resolve(m);
 			});
 			setTimeout(() => {
 				if (!isPending) return;
 				reject();
-				this._logger?.log(`Timeout while waiting for ${message.command} from ${message.lockId}`.red);
+				this._logger?.log(
+					`Timeout while waiting for ${message.command} from ${message.lockId}`
+						.red
+				);
 			}, RESPONSE_TIMEOUT);
-            // don't await
+			// don't await
 			this.sendCommand(message);
 		});
 	}
 
 	private async sendCommand(message: Omit<ScooterMessage, "vendor">) {
 		return new Promise<void>((resolve, reject) => {
-            const { params, lockId, command } = message;
-            const paramsString = params.length === 0 ? "" : `,${params.join(",")}`;
-            const cmdString = `*SCOS,LA,${lockId},${command}${paramsString}#\n`;
-            if (!this._logger)
-                throw "WHAT";
-            this._logger?.log("SEND".red, cmdString.slice(0, -1));
+			const { params, lockId, command } = message;
+			const paramsString =
+				params.length === 0 ? "" : `,${params.join(",")}`;
+			const cmdString = `*SCOS,LA,${lockId},${command}${paramsString}#\n`;
+			if (!this._logger) throw "WHAT";
+			this._logger?.log("SEND".red, cmdString.slice(0, -1));
 			this._sock.write(cmdString, "ascii", (err) => {
 				if (err) return reject(err);
-                resolve();
+				resolve();
 			});
 		});
 	}
@@ -238,13 +247,13 @@ export abstract class ScooterTcpService {
 			await this.sendCommandAndWait({
 				command: "D0",
 				lockId,
-				params: []
+				params: [],
 			}).catch(() => {});
 		}
 	}
 
-    private async beginLockingOp(lockId: string) {
-        const userId = "1235";
+	private async beginLockingOp(lockId: string) {
+		const userId = "1235";
 		const timestamp = Date.now().toString().slice(0, -3);
 		const response = await this.sendCommandAndWait({
 			command: "R0",
@@ -256,10 +265,10 @@ export abstract class ScooterTcpService {
 			userId,
 			timestamp,
 		};
-    }
+	}
 
 	async unlockScooter(lockId: string) {
-        const { opkey, userId, timestamp } = await this.beginLockingOp(lockId);
+		const { opkey, userId, timestamp } = await this.beginLockingOp(lockId);
 		const response = await this.sendCommandAndWait({
 			command: "L0",
 			lockId,
@@ -276,9 +285,9 @@ export abstract class ScooterTcpService {
 		});
 	}
 
-    /** Returns "cycling time" */
-    async lockScooter(lockId: string) {
-        const { opkey } = await this.beginLockingOp(lockId);
+	/** Returns "cycling time" */
+	async lockScooter(lockId: string) {
+		const { opkey } = await this.beginLockingOp(lockId);
 		const response = await this.sendCommandAndWait({
 			command: "L1",
 			lockId,
@@ -289,8 +298,8 @@ export abstract class ScooterTcpService {
 			lockId,
 			params: [],
 		});
-        return response.params[3];
-    }
+		return response.params[3];
+	}
 
 	async pingScooter(lockId: string) {
 		const response = await this.sendCommandAndWait({
@@ -302,30 +311,34 @@ export abstract class ScooterTcpService {
 		return false;
 	}
 
-    async modifyLights(lockId: string, options: { tail?: boolean; head?: boolean }) {
-        const tail =
+	async modifyLights(
+		lockId: string,
+		options: { tail?: boolean; head?: boolean }
+	) {
+		const tail =
 			options.tail === undefined ? "0" : options.tail ? "2" : "1";
-        const head =
+		const head =
 			options.head === undefined ? "0" : options.head ? "2" : "1";
-        const response = await this.sendCommandAndWait({
-            command: "S7",
-            lockId,
-            params: [head, "0", "0", tail]
-        });
-        return {
-            head: response.params[0],
-            tail: response.params[3]
-        };
-    }
+		const response = await this.sendCommandAndWait({
+			command: "S7",
+			lockId,
+			params: [head, "0", "0", tail],
+		});
+		return {
+			head: response.params[0],
+			tail: response.params[3],
+		};
+	}
 
-	async requestLocationOnce(lockId: string): Promise<DecimalDegreesLocation | null> {
+	async requestLocationOnce(
+		lockId: string
+	): Promise<DecimalDegreesLocation | null> {
 		const response = await this.sendCommandAndWait({
 			command: "D0",
 			lockId,
-			params: []
+			params: [],
 		});
-		if (response.params[12] === "N")
-			return null;
+		if (response.params[12] === "N") return null;
 		const latStr = response.params[3];
 		const lonStr = response.params[5];
 		return decimalMinutesToDecimalDegrees([
