@@ -143,7 +143,7 @@ export default abstract class RideService extends CrudService<Ride> {
 						type: "Point",
 						coordinates: currentLocation,
 					},
-					isFinished: true,
+					status: "completed",
 					endedAt: new Date(),
 				},
 			},
