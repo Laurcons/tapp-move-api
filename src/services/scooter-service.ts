@@ -45,6 +45,12 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 		});
 	}
 
+	/** Returns a scooter if the reservation was successful, null otherwise */
+	async tryBookScooter(code: string): Promise<Scooter | null> {
+		const scooter = await this.model.findOneAndUpdate({ isBooked: false, code }, { isBooked: true });
+		return scooter;
+	}
+
 	async findAllNearAndUnbooked(coordinates: [number, number]) {
 		return await this.model.find({
 			location: {

@@ -71,48 +71,50 @@ export default abstract class RideService extends CrudService<Ride> {
 			throw ApiError.alreadyRiding;
 		}
 		// retrieve scooter
-		const scooter = await this.scooterService.findOne({
-			code: scooterCode,
-		});
+		const scooter = await this.scooterService.tryBookScooter(scooterCode);
 		if (!scooter) {
-			throw ApiError.scooterNotFound;
-		}
-		if (scooter.isBooked) {
 			throw ApiError.scooterUnavailable;
 		}
-		// check if scooter is within 80 meters
-		if (!isNFC) {
-			// this will be caught by the validation but we need to check here
-			// bc of ts
-			if (!coordinates) throw new Error("what happend");
-			const dist = getDistance(
-				{ lat: coordinates[0], lon: coordinates[1] },
-				{
-					lat: scooter.location.coordinates[0],
-					lon: scooter.location.coordinates[1],
-				}
-			);
-			if (dist > 80) throw ApiError.tooFarAway;
+		// in case any of the following fails, the scooter needs be unreserved
+		try {
+			// check if scooter is within 80 meters
+			if (!isNFC) {
+				// this will be caught by the validation but we need to check here
+				// bc of ts
+				if (!coordinates) throw new Error("what happend");
+				const dist = getDistance(
+					{ lat: coordinates[0], lon: coordinates[1] },
+					{
+						lat: scooter.location.coordinates[0],
+						lon: scooter.location.coordinates[1],
+					}
+				);
+				if (dist > 80) throw ApiError.tooFarAway;
+			}
+			// unlock the actual scooter
+			if (!scooter.code.startsWith("DMY")) {
+				await this.tcpService.unlockScooter(scooter.lockId);
+			}
+			// mark scooter as booked
+			scooter.isUnlocked = true;
+			await scooter.save();
+			// create ride
+			const ride = await this.insert({
+				from: {
+					type: "Point",
+					coordinates: scooter.location.coordinates,
+				},
+				status: "ongoing",
+				scooterId: scooter._id,
+				userId: user._id,
+			});
+			return ride;
+		} catch (ex) {
+			scooter.isBooked = false;
+			await scooter.save();
+			console.log(ex);
+			throw ApiError.scooterUnavailable;
 		}
-		// unlock the actual scooter
-		if (!scooter.code.startsWith("DMY")) {
-			await this.tcpService.unlockScooter(scooter.lockId);
-		}
-		// mark scooter as booked
-		scooter.isBooked = true;
-		scooter.isUnlocked = true;
-		await scooter.save();
-		// create ride
-		const ride = await this.insert({
-			from: {
-				type: "Point",
-				coordinates: scooter.location.coordinates,
-			},
-			status: "ongoing",
-			scooterId: scooter._id,
-			userId: user._id,
-		});
-		return ride;
 	}
 
 	async endCurrentRide(user: User, currentLocation: [number, number]) {
