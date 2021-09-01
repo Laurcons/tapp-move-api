@@ -20,9 +20,6 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 		super(ScooterModel);
 		this.tcpService.onScooterNeedsUpdate.on(async (data) => {
 			const { lockId, batteryLevel, isUnlocked, isCharging } = data;
-			// console.log(data);
-			// const scoot = await this.findOne({ lockId });
-			// console.log(scoot);
 			// don't await
 			await this.updateOne(
 				{ lockId },

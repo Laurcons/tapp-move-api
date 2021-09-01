@@ -28,6 +28,11 @@ export interface ScooterNeedsLocationUpdateEvent {
 	location: [number, number];
 }
 
+export interface NewRoutePointEvent {
+	lockId: string;
+	location: [number, number];
+}
+
 export abstract class ScooterTcpService {
 
 	private static _instance: ScooterTcpService | null;
@@ -44,6 +49,8 @@ export abstract class ScooterTcpService {
 	public onScooterNeedsUpdate = new TypedEvent<ScooterNeedsUpdateEvent>();
 	public onScooterNeedsLocationUpdate =
 		new TypedEvent<ScooterNeedsLocationUpdateEvent>();
+	public onLockIdStashNeeded = new TypedEvent<void>();
+	// public onNewRoutePoint = new TypedEvent<NewRoutePointEvent>();
 
 	async init(logger?: Logger) {
 		this._logger = logger ?? null;
@@ -145,7 +152,7 @@ export abstract class ScooterTcpService {
 		});
 	}
 
-	private handlePositionMessage(msg: ScooterMessage) {
+	private handleD0(msg: ScooterMessage) {
 		const [, , validFlag1, latStr, , lonStr, , , , , , validFlag2] =
 			msg.params;
 		if (validFlag1 !== "A" || validFlag2 === "N") {
@@ -175,9 +182,8 @@ export abstract class ScooterTcpService {
 			case "S6":
 				this.handleS6(message);
 				break;
-			case "D0": // fall through
-			case "D1":
-				this.handlePositionMessage(message);
+			case "D0":
+				this.handleD0(message);
 				break;
 		}
 		// call handlers
@@ -347,6 +353,22 @@ export abstract class ScooterTcpService {
 			[parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2))],
 			[parseInt(lonStr.substr(0, 2)), parseFloat(lonStr.slice(2))],
 		]);
+	}
+
+	async beginTrackPosition(lockId: string) {
+		await this.sendCommand({
+			command: "D1",
+			lockId,
+			params: ["10"]
+		});
+	}
+
+	async endTrackPosition(lockId: string) {
+		await this.sendCommand({
+			command: "D1",
+			lockId,
+			params: ["0"]
+		});
 	}
 }
 

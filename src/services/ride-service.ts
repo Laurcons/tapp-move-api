@@ -22,19 +22,53 @@ export default abstract class RideService extends CrudService<Ride> {
 
 	constructor() {
 		super(RideModel);
+		this.tcpService.onScooterNeedsLocationUpdate.on(async (data) => {
+			const { lockId, location } = data;
+			const scooter = await this.scooterService.findOne({ lockId });
+			if (!scooter) {
+				this._logger.log("Couldn't find lockId in database in onNewRoutePoint handler".red);
+				throw "what";
+			}
+			// the ride object has optimisticConcurrency set to true, so it will not be available for
+			//  modification until save() is called
+			const ride = await this.model.findOne({ scooterId: scooter._id, status: "ongoing" });
+			if (!ride) {
+				// this means that there isn't any active ride with this scooter:
+				//  we preventively tell it to stop sending at interval (in case it is sending at interval)
+				await this.tcpService.endTrackPosition(lockId);
+				return;
+			}
+			const lastPoint = ride.route[ride.route.length - 1];
+			if (!lastPoint) throw "what";
+			const distance = getDistance(lastPoint, location);
+			// if distance is less than 10 meters, don't add
+			if (distance < 10) {
+				this._logger.log(`Distance since last point was ${distance} <10m so it was ignored`);
+				return;
+			}
+			// add it
+			ride.route.push(location);
+			await ride.save();
+			this._logger.log(`Added location with d=${distance} for code=${scooter.code}`);
+		});
 	}
 
-	private calculateRideInfo(ride: Ride, currentLocation: [number, number]) {
-		const linearDistance = getDistance(currentLocation, {
-			lat: ride.from.coordinates[1],
-			lon: ride.from.coordinates[0],
+	private calculateRideInfo(ride: Ride, currentLocation?: [number, number]) {
+		const linearDistance = getDistance(ride.route[ride.route.length-1], {
+			lat: ride.route[0][1],
+			lon: ride.route[0][0],
 		});
+		let pathDistance = 0;
+		for (let i = 0; i < ride.route.length - 1; i++) {
+			pathDistance += getDistance(ride.route[i], ride.route[i+1]);
+		}
 		const duration =
 			-1 *
 			DateTime.fromJSDate(ride.startedAt).diffNow().as("milliseconds");
 		const price = Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute
 		return {
 			linearDistance,
+			pathDistance,
 			duration,
 			price,
 		};
@@ -93,17 +127,16 @@ export default abstract class RideService extends CrudService<Ride> {
 			}
 			// unlock the actual scooter
 			if (!scooter.code.startsWith("DMY")) {
-				await this.tcpService.unlockScooter(scooter.lockId);
+				if (!scooter.isUnlocked)
+					await this.tcpService.unlockScooter(scooter.lockId);
+				await this.tcpService.beginTrackPosition(scooter.lockId);
 			}
 			// mark scooter as booked
 			scooter.isUnlocked = true;
 			await scooter.save();
 			// create ride
 			const ride = await this.insert({
-				from: {
-					type: "Point",
-					coordinates: scooter.location.coordinates,
-				},
+				route: [ scooter.location.coordinates ],
 				status: "ongoing",
 				scooterId: scooter._id,
 				userId: user._id,
@@ -113,6 +146,8 @@ export default abstract class RideService extends CrudService<Ride> {
 			scooter.isBooked = false;
 			await scooter.save();
 			console.log(ex);
+			if (ex instanceof ApiError)
+				throw ex;
 			throw ApiError.scooterUnavailable;
 		}
 	}
@@ -131,7 +166,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		// end physically
 		if (!scooter.code.startsWith("DMY")) {
 			try {
-				await this.tcpService.lockScooter(scooter.lockId);
+				if (scooter.isUnlocked)
+					await this.tcpService.lockScooter(scooter.lockId);
+				await this.tcpService.endTrackPosition(scooter.lockId);
 			} catch (_) {
 				this._logger.log("Scooter not responding".red);
 			}
@@ -196,7 +233,7 @@ export default abstract class RideService extends CrudService<Ride> {
 
 	async getHistory(user: User, start: number, count: number) {
 		const rides = await this.model
-			.find({ userId: user._id, status: "ongoing" })
+			.find({ userId: user._id })
 			.skip(start)
 			.limit(count);
 		return rides;

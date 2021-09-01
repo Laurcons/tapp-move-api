@@ -2,14 +2,7 @@ import mongoose from 'mongoose';
 
 export interface Ride extends mongoose.Document {
     status: "ongoing" | "payment-pending" | "completed";
-	from: {
-		type: "Point";
-		coordinates: [number, number];
-	};
-	to?: {
-		type: "Point";
-		coordinates: [number, number];
-	};
+	route: [[number, number]],
     startedAt: Date;
     endedAt?: Date;
 	scooterId: mongoose.Types.ObjectId;
@@ -21,15 +14,7 @@ export const rideSchema = new mongoose.Schema({
         type: String,
         enum: [ "ongoing", "payment-pending", "completed" ],
     },
-    from: {
-        type: { type: String },
-        coordinates: [Number, Number]
-    },
-    to: {
-        type: { type: String },
-        coordinates: [Number, Number],
-        required: false,
-    },
+    route: [[Number, Number]],
     startedAt: {
         type: Date,
         default: Date.now
@@ -41,11 +26,12 @@ export const rideSchema = new mongoose.Schema({
     scooterId: mongoose.Types.ObjectId,
     userId: mongoose.Types.ObjectId
 }, {
+    optimisticConcurrency: true,
     toJSON: {
-        transform: (doc: Ride, ret: any) => {
-            ret.from = doc.from.coordinates;
-            ret.to = doc.to?.coordinates;
-        }
+        // transform: (doc: Ride, ret: any) => {
+        //     ret.from = doc.from.coordinates;
+        //     ret.to = doc.to?.coordinates;
+        // }
     }
 });
 
