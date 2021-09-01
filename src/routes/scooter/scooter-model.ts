@@ -29,6 +29,12 @@ export const scooterSchema = new mongoose.Schema({
     isCharging: Boolean,
     isUnlocked: Boolean,
     isBooked: Boolean,
+}, {
+    toJSON: {
+        transform: (doc: Scooter, ret: any) => {
+            ret.location = doc.location.coordinates;
+        }
+    }
 });
 
 export const ScooterModel = mongoose.model<Scooter>("scooter", scooterSchema);

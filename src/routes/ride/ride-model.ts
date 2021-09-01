@@ -40,6 +40,13 @@ export const rideSchema = new mongoose.Schema({
     },
     scooterId: mongoose.Types.ObjectId,
     userId: mongoose.Types.ObjectId
+}, {
+    toJSON: {
+        transform: (doc: Ride, ret: any) => {
+            ret.from = doc.from.coordinates;
+            ret.to = doc.to?.coordinates;
+        }
+    }
 });
 
 export const RideModel = mongoose.model<Ride>("ride", rideSchema);
