@@ -3,6 +3,10 @@ import net, { createConnection } from "net";
 import { Logger } from "../logger";
 import { Queue } from "queue-typescript";
 import { TypedEvent } from "../typed-event";
+import { DecimalDegreesLocation, decimalMinutesToDecimalDegrees } from "../coord-convert";
+
+/** Currently 10 seconds */
+const RESPONSE_TIMEOUT = 10 * 1000;
 
 export interface ScooterMessage {
 	vendor: string;
@@ -17,6 +21,11 @@ export interface ScooterNeedsUpdateEvent {
     batteryLevel: number;
     isUnlocked: boolean;
 };
+
+export interface ScooterNeedsLocationUpdateEvent {
+	lockId: string;
+	location: [number, number];
+}
 
 export abstract class ScooterTcpService {
 	private static _instance: ScooterTcpService | null;
@@ -33,6 +42,7 @@ export abstract class ScooterTcpService {
 	private _eventQueue: Record<string, Queue<MessageHandler>> = {};
 
     public onScooterNeedsUpdate = new TypedEvent<ScooterNeedsUpdateEvent>();
+	public onScooterNeedsLocationUpdate = new TypedEvent<ScooterNeedsLocationUpdateEvent>();
 
 	async init(logger?: Logger) {
 		this._logger = logger ?? null;
@@ -129,14 +139,39 @@ export abstract class ScooterTcpService {
 				`${lockStatus === "0" ? "unlocked" : "locked"} ` +
 				`${signal}/32`
 		);
+		// push to scooter
+		this.onScooterNeedsUpdate.emit({
+			lockId: msg.lockId,
+			batteryLevel: parseInt(msg.params[0]),
+			isUnlocked: msg.params[6] === "0",
+		});
+	}
+
+	private handlePositionMessage(msg: ScooterMessage) {
+		const [,, validFlag1, latStr,, lonStr,,,,,, validFlag2 ] = msg.params;
+		if (validFlag1 !== "A" || validFlag2 === "N") {
+			this._logger?.log("Scooter remarked that it doesn't know where it is");
+			return;
+		}
+		const coords = decimalMinutesToDecimalDegrees([
+			[ parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2)) ],
+			[ parseInt(lonStr.substr(0, 2)), parseFloat(lonStr.slice(2))]
+		]);
+		// push to scooter
+		this.onScooterNeedsLocationUpdate.emit({
+			lockId: msg.lockId,
+			location: coords
+		});
 	}
 
 	private handleParsedMessage(message: ScooterMessage) {
-		if (message.command === "H0")
-			// don't await
-			this.handleH0(message);
-		else if (message.command === "S6")
-			this.handleS6(message);
+		// do handling for special messages
+		switch (message.command) {
+			case "H0": this.handleH0(message); break;
+			case "S6": this.handleS6(message); break;
+			case "D0": // fall through
+			case "D1": this.handlePositionMessage(message); break;
+		}
 		// call handlers
 		const key = message.lockId + message.command;
 		const handlers = this._eventQueue[key];
@@ -160,8 +195,9 @@ export abstract class ScooterTcpService {
 	}
 
 	private async sendCommandAndWait(message: Omit<ScooterMessage, "vendor">) {
-		return new Promise<ScooterMessage>((resolve) => {
+		return new Promise<ScooterMessage>((resolve, reject) => {
             this.addToQueue(message.lockId, message.command, (m) => resolve(m));
+			setTimeout(() => reject(), RESPONSE_TIMEOUT);
             // don't await
 			this.sendCommand(message);
 		});
@@ -185,25 +221,23 @@ export abstract class ScooterTcpService {
 	async sendGreetings() {
 		// const lockIds = await this.scooterService.getAllLockIds();
 		const lockIds = ["867584033774352"];
-		const promises = lockIds.map((lockId) => {
-			return this.sendCommandAndWait({
+		for (const lockId of lockIds) {
+			await this.sendCommandAndWait({
 				command: "S6",
 				lockId,
 				params: [],
-			}).then((msg) => {
-                this.onScooterNeedsUpdate.emit({
-                    lockId: msg.lockId,
-                    batteryLevel: parseInt(msg.params[0]),
-                    isUnlocked: msg.params[6] === "0",
-                });
-			});
-		});
-		await Promise.all(promises);
+			}).catch(() => {});
+			await this.sendCommandAndWait({
+				command: "D0",
+				lockId,
+				params: []
+			}).catch(() => {});
+		}
 	}
 
     private async beginLockingOp(lockId: string) {
         const userId = "1235";
-		const timestamp = Date.now().toString().slice(-5);
+		const timestamp = Date.now().toString().slice(0, -3);
 		const response = await this.sendCommandAndWait({
 			command: "R0",
 			lockId,
@@ -275,6 +309,22 @@ export abstract class ScooterTcpService {
             tail: response.params[3]
         };
     }
+
+	async requestLocationOnce(lockId: string): Promise<DecimalDegreesLocation | null> {
+		const response = await this.sendCommandAndWait({
+			command: "D0",
+			lockId,
+			params: []
+		});
+		if (response.params[12] === "N")
+			return null;
+		const latStr = response.params[3];
+		const lonStr = response.params[5];
+		return decimalMinutesToDecimalDegrees([
+			[parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2))],
+			[parseInt(lonStr.substr(0, 2)), parseFloat(lonStr.slice(2))],
+		]);
+	}
 }
 
 class ScooterTcpServiceInstance extends ScooterTcpService {}

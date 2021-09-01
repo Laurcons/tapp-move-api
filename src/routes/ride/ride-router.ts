@@ -21,7 +21,7 @@ rideRouter.get("/current",
 rideRouter.post(
 	"/current/end",
 	authenticate("user"),
-	validate({ query: LocationQueryDTO }), // uses similar schema
+	validate({ query: LocationQueryDTO }),
 	asyncWrap(RideController.endCurrent)
 );
 rideRouter.patch(

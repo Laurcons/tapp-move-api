@@ -1,3 +1,4 @@
+import { Logger } from './../logger';
 import { getDistance } from "geolib";
 import { DateTime } from "luxon";
 import ApiError from "../api-error";
@@ -11,6 +12,7 @@ import { ScooterTcpService } from "./scooter-tcp-service";
 export default abstract class RideService extends CrudService<Ride> {
 	private scooterService = ScooterService.instance;
 	private tcpService = ScooterTcpService.instance;
+	private _logger = new Logger({ prefix: "ride-svc"});
 
 	private static _instance: RideService | null = null;
 	static get instance() {
@@ -126,7 +128,11 @@ export default abstract class RideService extends CrudService<Ride> {
 		if (!scooter) throw ApiError.scooterNotFound;
 		// end physically
 		if (!scooter.code.startsWith("DMY")) {
-			await this.tcpService.lockScooter(scooter.lockId);
+			try {
+				await this.tcpService.lockScooter(scooter.lockId);
+			} catch (_) {
+				this._logger.log("Scooter not responding".red);
+			}
 		}
 		// end in db
 		const newRide = await this.model.findOneAndUpdate(

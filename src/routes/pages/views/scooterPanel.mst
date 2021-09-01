@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We"
+			crossorigin="anonymous"
+		/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/a11y-dark.min.css" integrity="sha512-Vj6gPCk8EZlqnoveEyuGyYaWZ1+jyjMPg8g4shwyyNlRQl6d3L9At02ZHQr5K6s5duZl/+YKMnM3/8pDhoUphg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+		<title>Scooter Panel ADMIN - Move TAPP</title>
+	</head>
+	<body>
+		<div class="container py-3">
+            <div class="card mb-2">
+                <div class="card-header">
+                    Authentication credentials
+                </div>
+                <div class="card-body">
+                    <input type="email" class="form-control" id="email-input" value="laurcons@outlook.com">
+                    <input type="text" class="form-control" id="password-input" value="123456">
+                    <button type="button" class="btn btn-primary" id="login-btn">Login</button>
+                </div>
+            </div>
+            <div class="card mb-2">
+                <div class="card-header">
+                    Live ride information
+                </div>
+                <div class="card-body">
+                    <pre><code class="language-json" id="ride-live"></code></pre>
+                    <pre><code class="language-json" id="coords"></code></pre>
+                </div>
+            </div>
+            <div class="card mb-2">
+                <div class="card-header">
+                    Control
+                </div>
+                <div class="card-body">
+                    <input type="text" class="form-control" id="scooter-code-input" value="DMY1">
+                    <button type="button" id="start-ride-btn" class="btn btn-primary">Start ride</button>
+                    <button type="button" id="end-ride-btn" class="btn btn-primary">End ride</button>
+                    <button type="button" id="lock-btn" class="btn btn-primary">Lock scooter</button>
+                    <button type="button" id="unlock-btn" class="btn btn-primary">Unlock scooter</button>
+                    <button type="button" id="head-on-btn" class="btn btn-primary">Turn head on</button>
+                    <button type="button" id="head-of-btn" class="btn btn-primary">Turn head off</button>
+                </div>
+            </div>
+        </div>
+
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+			integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer"
+		></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js" integrity="sha512-MinqHeqca99q5bWxFNQEQpplMBFiUNrEwuuDj2rCSh1DgeeTXUgvgYIHZ1puBS9IKBkdfLMSk/ZWVDasa3Y/2A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/languages/json.min.js" integrity="sha512-aZMByzpBNWHq5dwl9+wCH9CvkJere5i2d/sOShXk/8IiGeROWL6gdUu/PzIqA8BnS+YSm61yXXBHlMb0RZVrHg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script>
+            let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzA0MDkzODMsInN1YiI6IjYxMWI4MWEzODliNGM1NDY5NDY1ZjY3ZiJ9.qS0phUMvPFoyK0yVreB8dHRQWGksm0q5dbM46dNkZJk";
+            const beforeSend = function(xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer " + token);
+            }
+            let currentCoords;
+            const contentType = "application/json";
+            const dataType = "json";
+
+            const rideInterval = setInterval(function() {
+                if (!token) return;
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(data) {
+                        currentCoords = data.coords;
+                    });
+                } else {
+                    alert("Browser no support geoloc");
+                }
+                if (currentCoords) {
+                    $.ajax({
+                        method: "GET",
+                        url: "/api-v1/rides/current?location=" + currentCoords.latitude + "," + currentCoords.longitude,
+                        dataType, contentType, beforeSend
+                    }).then(function(result) {
+                        $("#ride-live").html(JSON.stringify(result, null, 4));
+                    }).catch(function(xhr, err) {
+                        $("#ride-live").html(xhr.responseText);
+                    }).always(function() {
+                        hljs.highlightAll();
+                    });
+                }
+            }, 3000);
+            
+            $("#login-btn").click(function(ev) {
+                const email = $("#email-input").val();
+                const password = $("#password-input").val();
+                $.ajax({
+                    method: "POST",
+                    url: "/api-v1/auth/login",
+                    dataType,
+                    contentType,
+                    data: JSON.stringify({
+                        email, password
+                    })
+                }).then(function(result) {
+                    token = result.token;
+                }).catch(alert);
+            });
+
+            $("#start-ride-btn").click(function() {
+
+            });
+
+            hljs.highlightAll();
+        </script>
+	</body>
+</html>

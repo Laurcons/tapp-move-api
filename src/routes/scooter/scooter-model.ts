@@ -25,6 +25,7 @@ export const scooterSchema = new mongoose.Schema({
         ]
     },
     batteryLevel: Number,
+    isCharging: Boolean,
     isUnlocked: Boolean,
     isBooked: Boolean,
 });
