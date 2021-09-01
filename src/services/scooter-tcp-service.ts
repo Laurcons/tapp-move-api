@@ -156,7 +156,7 @@ export abstract class ScooterTcpService {
 		}
 		const coords = decimalMinutesToDecimalDegrees([
 			[parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2))],
-			[parseInt(lonStr.substr(0, 3)), parseFloat(lonStr.slice(2))],
+			[parseInt(lonStr.substr(0, 3)), parseFloat(lonStr.slice(3))],
 		]);
 		this._logger?.log(`Scooter said it's at ${coords}`);
 		// push to scooter
