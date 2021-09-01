@@ -31,6 +31,14 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 				}
 			);
 		});
+		this.tcpService.onScooterNeedsLocationUpdate.on((data) => {
+			const { lockId, location } = data;
+			// don't await
+			this.updateOne(
+				{ lockId },
+				{ $set: { "location.coordinates": location } }
+			);
+		});
 	}
 
 	async findAllNearAndUnbooked(coordinates: [number, number]) {
@@ -69,8 +77,12 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 		if (scooterCode.startsWith("DMY")) {
 			return true;
 		} else {
-			const result = await this.tcpService.pingScooter(scooter.lockId);
-			return result;
+			try {
+				const result = await this.tcpService.pingScooter(scooter.lockId);
+				return result;
+			} catch (_) {
+				return false;
+			}
 		}
 	}
 
