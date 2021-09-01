@@ -196,8 +196,16 @@ export abstract class ScooterTcpService {
 
 	private async sendCommandAndWait(message: Omit<ScooterMessage, "vendor">) {
 		return new Promise<ScooterMessage>((resolve, reject) => {
-            this.addToQueue(message.lockId, message.command, (m) => resolve(m));
-			setTimeout(() => reject(), RESPONSE_TIMEOUT);
+			let isPending = true;
+            this.addToQueue(message.lockId, message.command, (m) => {
+				isPending = false;
+				resolve(m);
+			});
+			setTimeout(() => {
+				if (!isPending) return;
+				reject();
+				this._logger?.log(`Timeout while waiting for ${message.command} from ${message.lockId}`.red);
+			}, RESPONSE_TIMEOUT);
             // don't await
 			this.sendCommand(message);
 		});
