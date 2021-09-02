@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Logger } from './../logger';
 import { getDistance } from "geolib";
 import { DateTime } from "luxon";
@@ -82,9 +83,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		return !!result;
 	}
 
-	async getCurrentRide(user: User, currentLocation: [number, number]) {
+	async getRide(rideId: string, currentLocation: [number, number]) {
 		const ride = await this.model.findOne({
-			userId: user._id,
+			_id: mongoose.Types.ObjectId(rideId),
 			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;
@@ -101,9 +102,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		coordinates?: [number, number],
 		isNFC?: boolean
 	) {
-		if (await this.isUserRiding(user)) {
-			throw ApiError.alreadyRiding;
-		}
+		// if (await this.isUserRiding(user)) {
+		// 	throw ApiError.alreadyRiding;
+		// }
 		// retrieve scooter
 		const scooter = await this.scooterService.tryBookScooter(scooterCode);
 		if (!scooter) {
@@ -152,9 +153,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		}
 	}
 
-	async endCurrentRide(user: User, currentLocation: [number, number]) {
+	async endRide(rideId: string, currentLocation: [number, number]) {
 		const ride = await this.model.findOne({
-			userId: user._id,
+			_id: mongoose.Types.ObjectId(rideId),
 			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;
@@ -166,11 +167,11 @@ export default abstract class RideService extends CrudService<Ride> {
 		// end physically
 		if (!scooter.code.startsWith("DMY")) {
 			try {
+				await this.tcpService.endTrackPosition(scooter.lockId);
 				if (scooter.isUnlocked)
 					await this.tcpService.lockScooter(scooter.lockId);
-				await this.tcpService.endTrackPosition(scooter.lockId);
 			} catch (_) {
-				this._logger.log("Scooter not responding".red);
+				this._logger.log("Scooter did not respond while ending ride".red);
 			}
 		}
 		// end in db
@@ -198,9 +199,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		};
 	}
 
-	async updateRide(user: User, settings: PatchBodyDTO) {
+	async updateRide(rideId: string, settings: PatchBodyDTO) {
 		const ride = await this.findOne({
-			userId: user._id,
+			_id: mongoose.Types.ObjectId(rideId),
 			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;

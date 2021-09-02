@@ -1,9 +1,9 @@
-import { PaginationQueryDTO, PatchBodyDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
+import { LocationQueryDTO, PaginationQueryDTO, PatchBodyDTO, RideIdParamsDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
 import { Ride } from "./ride-model";
-import { LeanDocument } from "mongoose";
 import { ValidationError } from "class-validator";
+import ApiError from "../../api-error";
 
 class RideController {
 	rideService = RideService.instance;
@@ -15,7 +15,7 @@ class RideController {
 		// if the isNFC flag is NOT set then we need to check the location
 		//  has been provided, because this is not caught by the DTO validation
 		if (!req.query.isNFC && !req.body.location) {
-			throw new ValidationError();
+			throw new ApiError(400, "location-not-set", "You need to provide the location if you're not using NFC");
 		}
 		const ride = await this.rideService.startRide(
 			req.session.user,
@@ -29,8 +29,8 @@ class RideController {
 		});
 	};
 
-	getCurrent = async (
-		req: Request<{}, {}, {}, { location: string }>,
+	getRide = async (
+		req: Request<Partial<RideIdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
 		res: Response<{
 			status: string;
 			linearDistance: number;
@@ -39,12 +39,10 @@ class RideController {
 			durationUnit: string;
 		}>
 	) => {
-		const { location } = req.query;
+		const { location } = req.query as LocationQueryDTO;
+		const { id } = req.params as RideIdParamsDTO;
 		const coords = location.split(",").map(parseFloat) as [number, number];
-		const result = await this.rideService.getCurrentRide(
-			req.session.user,
-			coords
-		);
+		const result = await this.rideService.getRide(id, coords);
 		res.json({
 			status: "success",
 			...result,
@@ -53,8 +51,8 @@ class RideController {
 		});
 	};
 
-	endCurrent = async (
-		req: Request<{}, {}, {}, { location: string }>,
+	endRide = async (
+		req: Request<Partial<RideIdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
 		res: Response<{
 			status: string;
 			linearDistance: number;
@@ -65,12 +63,10 @@ class RideController {
 			currency: string;
 		}>
 	) => {
-		const { location } = req.query;
+		const { location } = req.query as LocationQueryDTO;
+		const { id } = req.params as RideIdParamsDTO;
 		const coords = location.split(",").map(parseFloat) as [number, number];
-		const result = await this.rideService.endCurrentRide(
-			req.session.user,
-			coords
-		);
+		const result = await this.rideService.endRide(id, coords);
 		res.json({
 			status: "success",
 			...result,
@@ -81,10 +77,10 @@ class RideController {
 	};
 
 	patch = async (
-		req: Request<{}, {}, PatchBodyDTO>,
+		req: Request<Partial<RideIdParamsDTO>, {}, PatchBodyDTO>,
 		res: Response<{ status: string }>
 	) => {
-		await this.rideService.updateRide(req.session.user, req.body);
+		await this.rideService.updateRide((req.params as RideIdParamsDTO).id, req.body);
 		res.json({
 			status: "success",
 		});

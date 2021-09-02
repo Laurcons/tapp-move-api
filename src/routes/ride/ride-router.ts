@@ -2,7 +2,7 @@ import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import RideController from "./ride-controller";
 import authenticate from "../../middlewares/auth-middleware";
-import { LocationQueryDTO, PaginationQueryDTO, StartRideBodyDTO, StartRideQueryDTO, PatchBodyDTO } from "./ride-dto";
+import { LocationQueryDTO, PaginationQueryDTO, StartRideBodyDTO, StartRideQueryDTO, PatchBodyDTO, RideIdParamsDTO } from "./ride-dto";
 import validate from "../../middlewares/validate-middleware";
 
 const rideRouter = express.Router();
@@ -13,21 +13,21 @@ rideRouter.post(
 	validate({ body: StartRideBodyDTO, query: StartRideQueryDTO }),
 	asyncWrap(RideController.startRide)
 );
-rideRouter.get("/current",
+rideRouter.get("/:id",
     authenticate("user"),
-    validate({ query: LocationQueryDTO }),
-    asyncWrap(RideController.getCurrent)
+    validate({ params: RideIdParamsDTO, query: LocationQueryDTO }),
+    asyncWrap(RideController.getRide)
 );
 rideRouter.post(
-	"/current/end",
+	"/:id/end",
 	authenticate("user"),
-	validate({ query: LocationQueryDTO }),
-	asyncWrap(RideController.endCurrent)
+	validate({ params: RideIdParamsDTO, query: LocationQueryDTO }),
+	asyncWrap(RideController.endRide)
 );
 rideRouter.patch(
-	"/current",
+	"/:id",
 	authenticate("user"),
-	validate({ body: PatchBodyDTO }),
+	validate({ params: RideIdParamsDTO, body: PatchBodyDTO }),
 	asyncWrap(RideController.patch)
 );
 rideRouter.get(
