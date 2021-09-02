@@ -66,6 +66,7 @@ export abstract class ScooterTcpService {
 	}
 
 	private async connect() {
+		this._logger?.log(`Connecting`.green);
 		this._sock.connect({
 			host: Config.get("TCP_HOST"),
 			port: parseInt(Config.get("TCP_PORT")),
