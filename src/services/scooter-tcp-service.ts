@@ -53,6 +53,10 @@ export abstract class ScooterTcpService {
 	// public onNewRoutePoint = new TypedEvent<NewRoutePointEvent>();
 
 	async init(logger?: Logger) {
+		if (Config.get("HAS_TCP") !== "true") {
+			console.log("TCP scooter interactivity is turned off\nTo turn scooter interactivity on, set env HAS_TCP to 'true'\nPlease note that attempting to interact with real scooters in this state will likely result in crashes".red.underline);
+			return;
+		}
 		this._logger = logger ?? null;
 		this._sock.setKeepAlive(true);
 		this._sock.on("data", (b) => this.handleRawData(b));

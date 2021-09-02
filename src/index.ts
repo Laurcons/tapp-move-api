@@ -65,8 +65,12 @@ const logger = new Logger({ prefix: "init" });
 	UserService.instance;
 	await listenAsync();
 	logger.log(`Listening on ${PORT}`.rainbow);
-	logger.log(`Sending scooter greetings...`);
-	await ScooterTcpService.instance.sendGreetings();
+	if (Config.get("HAS_TCP") === "true") {
+		logger.log(`Sending scooter greetings...`);
+		await ScooterTcpService.instance.sendGreetings();
+	} else {
+		logger.log("Scooter greetings were skipped");
+	}
 	logger.log("Initialization finished");
 })();
 
