@@ -1,9 +1,7 @@
-import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-/**
- * Checks whether the value is a string and whether it's a string of 24 hex characters (an ObjectId)
- */
-@ValidatorConstraint({ name: "isObjectIdString", async: false })
-export class IsObjectIdString implements ValidatorConstraintInterface {
+import { registerDecorator, ValidationArguments, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
+
+@ValidatorConstraint({ async: false })
+class IsObjectIdStringConstraint implements ValidatorConstraintInterface {
 
     validate(value: any, validationArguments?: ValidationArguments): boolean | Promise<boolean> {
         if (typeof value !== "string")
@@ -15,4 +13,19 @@ export class IsObjectIdString implements ValidatorConstraintInterface {
         return "The id provided is not formatted correctly: it must be a string of 24 hex characters";
     }
 
+}
+
+/**
+ * Checks whether the value is a string and whether it's a string of 24 hex characters (an ObjectId)
+ */
+export function IsObjectIdString(validationOptions?: ValidationOptions) {
+    return function (object: Object, propertyName: string) {
+        registerDecorator({
+            target: object.constructor,
+            propertyName,
+            options: validationOptions,
+            constraints: [],
+            validator: IsObjectIdStringConstraint
+        })
+    }
 }
