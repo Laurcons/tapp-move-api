@@ -360,7 +360,7 @@ export abstract class ScooterTcpService {
 		await this.sendCommand({
 			command: "D1",
 			lockId,
-			params: ["10"]
+			params: ["5"] // seconds interval the scooter should send location at
 		});
 	}
 
