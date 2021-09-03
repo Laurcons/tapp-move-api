@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export interface Ride extends mongoose.Document {
     status: "ongoing" | "payment-pending" | "completed";
-	route: [[number, number]],
+	route: [[number, number]];
     startedAt: Date;
     endedAt?: Date;
 	scooterId: mongoose.Types.ObjectId;
