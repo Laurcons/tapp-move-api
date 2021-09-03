@@ -1,4 +1,4 @@
-import { Admin, AdminModel } from "../routes/admin/admin-account/admin-model";
+import { Admin, AdminModel } from "../routes/admin/accounts/admin-model";
 import CrudService from "./crud-service-base";
 
 export default abstract class AdminAccountService extends CrudService<Admin> {

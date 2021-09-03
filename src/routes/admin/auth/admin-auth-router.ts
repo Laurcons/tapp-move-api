@@ -1,7 +1,7 @@
 import express from "express";
 import { asyncWrap } from "../../../async-wrap";
-import { LoginBodyDTO } from "./auth-dto";
-import AdminAuthController from "./auth-controller";
+import { LoginBodyDTO } from "./admin-auth-dto";
+import AdminAuthController from "./admin-auth-controller";
 import validate from "../../../middlewares/validate-middleware";
 import authenticate from "../../../middlewares/auth-middleware";
 

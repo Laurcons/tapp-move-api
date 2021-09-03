@@ -1,6 +1,6 @@
 
 import mongoose from "mongoose";
-import { Admin, adminSchema } from "../admin/admin-account/admin-model";
+import { Admin, adminSchema } from "../admin/accounts/admin-model";
 import { User, userSchema } from "./user-model";
 
 export interface Session extends mongoose.Document {

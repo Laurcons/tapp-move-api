@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { AdminAuthService } from "../../../services/admin-auth-service";
-import { Admin } from "../admin-account/admin-model";
-import { LoginBodyDTO } from "./auth-dto";
+import { Admin } from "../accounts/admin-model";
+import { LoginBodyDTO } from "./admin-auth-dto";
 
 class AdminAuthController {
 	private adminAuthService = AdminAuthService.instance;
