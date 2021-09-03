@@ -3,6 +3,14 @@ import mongoose from 'mongoose';
 export interface Ride extends mongoose.Document {
     status: "ongoing" | "payment-pending" | "completed";
 	route: [[number, number]];
+    startLocation: {
+        type: "Point",
+        coordinates: [number, number]
+    },
+    endLocation: {
+        type: "Point",
+        coordinates: [number, number]
+    },
     startedAt: Date;
     endedAt?: Date;
 	scooterId: mongoose.Types.ObjectId;
@@ -15,6 +23,14 @@ export const rideSchema = new mongoose.Schema({
         enum: [ "ongoing", "payment-pending", "completed" ],
     },
     route: [[Number, Number]],
+    startLocation: {
+        type: { type: String, default: "Point" },
+        coordinates: [Number, Number]
+    },
+    endLocation: {
+        type: { type: String, default: "Point" },
+        coordinates: [Number, Number]
+    },
     startedAt: {
         type: Date,
         default: Date.now

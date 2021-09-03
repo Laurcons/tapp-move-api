@@ -138,6 +138,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			// create ride
 			const ride = await this.insert({
 				route: [ scooter.location.coordinates ],
+				startLocation: { type: "Point", coordinates: scooter.location.coordinates },
 				status: "ongoing",
 				scooterId: scooter._id,
 				userId: user._id,
@@ -182,7 +183,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			{ _id: ride._id },
 			{
 				$set: {
-					to: {
+					endLocation: {
 						type: "Point",
 						coordinates: currentLocation,
 					},
