@@ -242,5 +242,9 @@ export default abstract class RideService extends CrudService<Ride> {
 			.limit(count);
 		return rides;
 	}
+
+	async getRidesForUser(user: User) {
+		return await this.model.find({ userId: user._id });
+	}
 }
 class RideServiceInstance extends RideService {}
