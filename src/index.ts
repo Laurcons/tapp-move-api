@@ -35,7 +35,9 @@ app.set("views", "./src/routes/pages/views");
 app.use("/pages", viewsRouter);
 if (process.env.NODE_ENV !== "production") app.disable("view cache");
 
-app.use(cors());
+app.use(cors({
+	credentials: true
+}));
 app.use(express.json());
 app.use(morgan(Config.get("MORGAN_MODE")));
 
