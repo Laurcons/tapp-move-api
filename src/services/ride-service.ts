@@ -147,7 +147,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			await user.save();
 			return ride;
 		} catch (ex) {
-			scooter.isBooked = false;
+			scooter.status = "available";
 			await scooter.save();
 			console.log(ex);
 			if (ex instanceof ApiError)
@@ -194,7 +194,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		);
 		await this.scooterService.updateOne(
 			{ _id: ride.scooterId },
-			{ $set: { isBooked: false, isUnlocked: true } }
+			{ $set: { status: "available", isUnlocked: true } }
 		);
 		return {
 			ride: newRide,

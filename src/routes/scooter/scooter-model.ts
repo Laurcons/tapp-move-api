@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface Scooter extends mongoose.Document {
+    status: "unavailable" | "booked" | "available";
 	code: string; // a 4-character code
     lockId: string;
 	location: {
@@ -10,10 +11,13 @@ export interface Scooter extends mongoose.Document {
     batteryLevel: number;
     isCharging: boolean;
     isUnlocked: boolean;
-    isBooked: boolean;
 }
 
 export const scooterSchema = new mongoose.Schema({
+    status: {
+        type: String,
+        enum: ["unavailable", "booked", "available"]
+    },
     code: String,
     lockId: String,
     location: {
@@ -28,7 +32,6 @@ export const scooterSchema = new mongoose.Schema({
     batteryLevel: Number,
     isCharging: Boolean,
     isUnlocked: Boolean,
-    isBooked: Boolean,
 }, {
     toJSON: {
         transform: (doc: Scooter, ret: any) => {

@@ -44,7 +44,7 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 
 	/** Returns a scooter if the reservation was successful, null otherwise */
 	async tryBookScooter(code: string): Promise<Scooter | null> {
-		const scooter = await this.model.findOneAndUpdate({ isBooked: false, code }, { isBooked: true });
+		const scooter = await this.model.findOneAndUpdate({ status: "available", code }, { status: "booked" });
 		return scooter;
 	}
 
@@ -59,7 +59,7 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 					$maxDistance: 4000,
 				},
 			},
-			isBooked: false,
+			status: "available",
 		});
 	}
 
@@ -68,9 +68,9 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 		coordinates: [number, number]
 	): Promise<boolean> {
 		// retrieve scooter
-		const scooter = await this.model.findOne({ code: scooterCode });
+		const scooter = await this.model.findOne({ status: "available", code: scooterCode });
 		if (!scooter) {
-			throw ApiError.scooterNotFound;
+			throw ApiError.scooterUnavailable;
 		}
 		// check distance
 		const dist = getDistance(
