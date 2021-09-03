@@ -142,6 +142,9 @@ export default abstract class RideService extends CrudService<Ride> {
 				scooterId: scooter._id,
 				userId: user._id,
 			});
+			// increment ride counter on user
+			user.totalRides++;
+			await user.save();
 			return ride;
 		} catch (ex) {
 			scooter.isBooked = false;
