@@ -29,11 +29,9 @@ export default abstract class RideService extends CrudService<Ride> {
 			const { lockId, location } = data;
 			const scooter = await this.scooterService.findOne({ lockId });
 			if (!scooter) {
-				this._logger.log("Couldn't find lockId in database in onNewRoutePoint handler".red);
+				this._logger.log("Couldn't find lockId in database in scooterLocation handler".red);
 				throw "what";
 			}
-			// the ride object has optimisticConcurrency set to true, so it will not be available for
-			//  modification until save() is called
 			const ride = await this.model.findOne({ scooterId: scooter._id, status: "ongoing" });
 			if (!ride) {
 				// this means that there isn't any active ride with this scooter:
@@ -50,8 +48,6 @@ export default abstract class RideService extends CrudService<Ride> {
 				return;
 			}
 			// add it
-			// ride.route.push(location);
-			// await ride.save();
 			await this.model.updateOne(
 				{ _id: ride._id },
 				{ $push: { route: location } }
