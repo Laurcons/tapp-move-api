@@ -78,10 +78,17 @@ export default abstract class UserService extends CrudService<User> {
 		if (!user) throw ApiError.emailPasswordIncorrect;
 		if (!(await this.verifyPassword(password, user.password)))
 			throw ApiError.emailPasswordIncorrect;
-		const jwt = await this.createSession(user);
+		// remove this step with caution: this step reselects the user without the
+		//  password. omitting this step might send to the frontend the password field
+		const newUser = await this.model.findOneAndUpdate(
+			{ _id: user._id },
+			{ $set: { lastLoginAt: new Date() } },
+			{ new: true }
+		) as User;
+		const jwt = await this.createSession(newUser);
 		return {
 			jwt,
-			user,
+			user: newUser,
 		};
 	};
 
