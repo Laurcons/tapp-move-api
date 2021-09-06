@@ -44,7 +44,7 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 
 	/** Returns a scooter if the reservation was successful, null otherwise */
 	async tryBookScooter(code: string): Promise<Scooter | null> {
-		const scooter = await this.model.findOneAndUpdate({ status: "available", code }, { status: "booked" });
+		const scooter = await this.model.findOneAndUpdate({ status: "available", code }, { status: "booked" }, { new: true });
 		return scooter;
 	}
 
@@ -81,7 +81,7 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 			}
 		);
 		if (dist > 100) throw ApiError.tooFarAway;
-		if (scooterCode.startsWith("DMY")) {
+		if (scooter.isDummy) {
 			return true;
 		} else {
 			try {

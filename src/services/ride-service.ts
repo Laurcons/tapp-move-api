@@ -127,14 +127,18 @@ export default abstract class RideService extends CrudService<Ride> {
 				if (dist > 80) throw ApiError.tooFarAway;
 			}
 			// unlock the actual scooter
-			if (!scooter.code.startsWith("DMY")) {
+			console.log(scooter.toObject());
+			if (!scooter.isDummy) {
 				if (!scooter.isUnlocked)
 					await this.tcpService.unlockScooter(scooter.lockId);
 				await this.tcpService.beginTrackPosition(scooter.lockId);
+			} else {
+				// set unlocked on dummy
+				await this.scooterService.updateOne(
+					{ _id: scooter._id },
+					{ isUnlocked: true }
+				);
 			}
-			// mark scooter as booked
-			scooter.isUnlocked = true;
-			await scooter.save();
 			// create ride
 			const ride = await this.insert({
 				route: [ scooter.location.coordinates ],
@@ -169,7 +173,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		});
 		if (!scooter) throw ApiError.scooterNotFound;
 		// end physically
-		if (!scooter.code.startsWith("DMY")) {
+		if (!scooter.isDummy) {
 			try {
 				await this.tcpService.endTrackPosition(scooter.lockId);
 				if (scooter.isUnlocked)
@@ -216,7 +220,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		if (!scooter) throw ApiError.scooterNotFound;
 		const { lock } = settings;
 		// set on actual scooter
-		if (!scooter.code.startsWith("DMY")) {
+		if (!scooter.isDummy) {
 			const { headlights, taillights } = settings;
 			if (lock !== undefined) {
 				if (lock) await this.tcpService.lockScooter(scooter.lockId);

@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
 
 export interface Scooter extends mongoose.Document {
-    status: "unavailable" | "booked" | "available";
+	status: "unavailable" | "booked" | "available";
 	code: string; // a 4-character code
-    lockId: string;
+	isDummy: boolean;
+	lockId: string;
 	location: {
-        type: "Point",
+		type: "Point";
 		coordinates: [number, number];
 	};
-    batteryLevel: number;
-    isCharging: boolean;
-    isUnlocked: boolean;
+	batteryLevel: number;
+	isCharging: boolean;
+	isUnlocked: boolean;
 }
 
 export const scooterSchema = new mongoose.Schema({
@@ -18,7 +19,11 @@ export const scooterSchema = new mongoose.Schema({
         type: String,
         enum: ["unavailable", "booked", "available"]
     },
-    code: String,
+    code: {
+        type: String,
+        validate: /^[A-Z0-9]{4}$/
+    },
+    isDummy: Boolean,
     lockId: String,
     location: {
         type: {
