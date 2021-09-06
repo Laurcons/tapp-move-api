@@ -5,14 +5,14 @@ export const passwordRegex = /^.{4,}$/;
 
 export class RegisterBodyDTO {
 	@cv.IsString()
-	@cv.Matches(usernameRegex)
+	@cv.Matches(usernameRegex, { message: "Your username can only contain letters, numbers, dashes, underscores and dots."})
 	username!: string;
 
-	@cv.IsEmail()
+	@cv.IsEmail({}, { message: "The email is not valid." })
 	email!: string;
 
 	@cv.IsString()
-	@cv.Matches(passwordRegex)
+	@cv.Matches(passwordRegex, { message: "Your password needs to be least 4 characters long." })
 	password!: string;
 }
 
