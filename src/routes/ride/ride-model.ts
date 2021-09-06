@@ -1,3 +1,4 @@
+import { ScooterModel } from './../scooter/scooter-model';
 import mongoose from 'mongoose';
 
 export interface Ride extends mongoose.Document {
@@ -41,6 +42,13 @@ export const rideSchema = new mongoose.Schema({
     },
     scooterId: mongoose.Types.ObjectId,
     userId: mongoose.Types.ObjectId
+}, {
+    toJSON: {
+        transform: (doc: Ride, ret: any) => {
+            ret.endLocation = doc.endLocation.coordinates;
+            ret.startLocation = doc.startLocation.coordinates;
+        }
+    }
 });
 
 rideSchema.index({ status: 1 }, { partialFilterExpression: { status: "ongoing" } });

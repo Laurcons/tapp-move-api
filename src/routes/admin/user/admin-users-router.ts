@@ -18,5 +18,12 @@ usersRouter.get(
     validate({ params: UserIdParamsDTO }),
     asyncWrap(AdminUsersController.getOne)
 );
+usersRouter.get(
+    "/:id/rides",
+    authenticate("admin"),
+    validate({ params: UserIdParamsDTO }),
+    asyncWrap(AdminUsersController.getRidesForUser)
+);
+
 
 export default usersRouter;

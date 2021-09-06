@@ -56,7 +56,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		});
 	}
 
-	private calculateRideInfo(ride: Ride, currentLocation?: [number, number]) {
+	calculateRideInfo(ride: Ride) {
 		const linearDistance = getDistance(ride.route[ride.route.length-1], {
 			lat: ride.route[0][1],
 			lon: ride.route[0][0],
@@ -91,7 +91,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;
-		const details = this.calculateRideInfo(ride, currentLocation);
+		const details = this.calculateRideInfo(ride);
 		return {
 			ride,
 			...details,
@@ -172,7 +172,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			status: "ongoing"
 		});
 		if (!ride) throw ApiError.rideNotFound;
-		const details = this.calculateRideInfo(ride, currentLocation);
+		const details = this.calculateRideInfo(ride);
 		const scooter = await this.scooterService.findOne({
 			_id: ride.scooterId,
 		});
