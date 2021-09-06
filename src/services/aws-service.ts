@@ -1,4 +1,5 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import Config from "../environment";
 
 export default abstract class AwsService {
@@ -32,5 +33,12 @@ export default abstract class AwsService {
 		);
         return key;
     }
+
+	async getSignedUrl(key: string) {
+		return await getSignedUrl(this._s3, new GetObjectCommand({
+			Bucket: Config.get("AWS_BUCKET"),
+			Key: key
+		}));
+	}
 }
 class AwsServiceInstance extends AwsService {}
