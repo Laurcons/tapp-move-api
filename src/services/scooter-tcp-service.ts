@@ -13,13 +13,13 @@ import { TypedEmitter } from "tiny-typed-emitter";
 /** Currently 10 seconds */
 const RESPONSE_TIMEOUT = 10 * 1000;
 
-export interface ScooterMessage {
+interface ScooterMessage {
 	vendor: string;
 	lockId: string;
 	command: string;
 	params: string[];
 }
-export type MessageHandler = (msg: ScooterMessage) => void;
+type ScooterMessageHandler = (msg: ScooterMessage) => void;
 
 export interface ScooterStatusEvent {
 	lockId: string;
@@ -44,10 +44,10 @@ interface ServiceEvents {
 	scooterStatus: (data: ScooterStatusEvent) => void;
 	lockIdStashNeeded: () => void;
 }
-export class ServiceEventEmitter extends TypedEmitter<ServiceEvents> {}
+class ServiceEventEmitter extends TypedEmitter<ServiceEvents> {}
 
 interface CommandEvents {
-	[key: string]: MessageHandler;
+	[key: string]: ScooterMessageHandler;
 }
 class CommandEventEmitter extends TypedEmitter<CommandEvents> {}
 
@@ -237,7 +237,7 @@ export abstract class ScooterTcpService {
 	private addToQueue(
 		lockId: string,
 		command: string,
-		handler: MessageHandler
+		handler: ScooterMessageHandler
 	) {
 		const key = lockId + command;
 		this._commandQueue.once(key, handler);
