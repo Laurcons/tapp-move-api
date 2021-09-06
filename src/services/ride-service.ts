@@ -9,9 +9,11 @@ import { User } from "../routes/user/user-model";
 import CrudService from "./crud-service-base";
 import ScooterService from "./scooter-service";
 import { ScooterTcpService } from "./scooter-tcp-service";
+import UserService from './user-service';
 
 export default abstract class RideService extends CrudService<Ride> {
 	private scooterService = ScooterService.instance;
+	private userService = UserService.instance;
 	private tcpService = ScooterTcpService.instance;
 	private _logger = new Logger({ prefix: "ride-svc"});
 
@@ -48,8 +50,12 @@ export default abstract class RideService extends CrudService<Ride> {
 				return;
 			}
 			// add it
-			ride.route.push(location);
-			await ride.save();
+			// ride.route.push(location);
+			// await ride.save();
+			await this.model.updateOne(
+				{ _id: ride._id },
+				{ $push: { route: location } }
+			);
 			this._logger.log(`Added location with d=${distance} for code=${scooter.code}`);
 		});
 	}
@@ -149,11 +155,18 @@ export default abstract class RideService extends CrudService<Ride> {
 			});
 			// increment ride counter on user
 			user.totalRides++;
-			await user.save();
+			this.userService.updateOne(
+				{ _id: user._id },
+				{ $set: { totalRides: user.totalRides } }
+			);
 			return ride;
 		} catch (ex) {
-			scooter.status = "available";
-			await scooter.save();
+			// scooter.status = "available";
+			// await scooter.save();
+			await this.scooterService.updateOne(
+				{ _id: scooter._id },
+				{ $set: { status: "available" } }
+			);
 			console.log(ex);
 			if (ex instanceof ApiError)
 				throw ex;

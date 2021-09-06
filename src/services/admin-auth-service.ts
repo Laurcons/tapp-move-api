@@ -40,8 +40,12 @@ export abstract class AdminAuthService extends CrudService<Admin> {
         const jwt = await JWTP.sign({}, Config.get("AUTH_SECRET"), {
             subject: admin._id.toString()
         });
-        admin.lastLoginAt = new Date();
-        await admin.save();
+        // admin.lastLoginAt = new Date();
+        // await admin.save();
+        await this.model.updateOne(
+            { _id: admin._id },
+            { $set: { lastLoginAt: new Date() } }
+        );
         await this.sessionService.insert({
             type: "admin",
             jwt,

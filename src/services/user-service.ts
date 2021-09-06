@@ -143,8 +143,12 @@ export default abstract class UserService extends CrudService<User> {
 		const token = cryptoRandomString({ length: 100 });
 		// send email
 		// await this.emailService.sendForgotPasswordEmail();
-		user.forgotPasswordToken = token;
-		await user.save();
+		// user.forgotPasswordToken = token;
+		// await user.save();
+		await this.model.updateOne(
+			{ _id: user._id },
+			{ $set: { forgotPasswordToken: token } }
+		);
 		return token;
 	};
 
@@ -156,10 +160,18 @@ export default abstract class UserService extends CrudService<User> {
 	updatePasswordWithToken = async (token: string, newPassword: string) => {
 		const user = await this.model.findOne({ forgotPasswordToken: token });
 		if (!user) throw ApiError.userNotFound;
-		user.password = await this.hashPassword(newPassword);
-		user.forgotPasswordToken = undefined;
+		const password = await this.hashPassword(newPassword);
+		// forgotPasswordToken = undefined;
 		// await this.sessionService.deleteOne({ userId: user._id });
-		await user.save();
+		// await user.save();
+		await this.model.updateOne(
+			{ _id: user._id },
+			{
+				$set: { password },
+				$unset: { forgotPasswordToken: 1 }
+			}
+		);
+		
 	};
 
 	uploadDriversLicense = async (user: User, image: Express.Multer.File) => {
