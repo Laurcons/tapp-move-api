@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface User extends mongoose.Document {
+	suspendedReason: string | undefined;
     email: string;
     username: string;
     password: string;
@@ -12,6 +13,10 @@ export interface User extends mongoose.Document {
 }
 
 export const userSchema = new mongoose.Schema({
+	suspendedReason: {
+		type: String,
+		required: false
+	},
 	email: String,
 	username: String,
 	password: {
