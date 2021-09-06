@@ -3,7 +3,12 @@ import net, { createConnection } from "net";
 import { Logger } from "../logger";
 import { Queue } from "queue-typescript";
 import { TypedEvent } from "../typed-event";
-import { DecimalDegreesLocation, decimalMinutesToDecimalDegrees } from "../coord-convert";
+import {
+	DecimalDegreesLocation,
+	decimalMinutesToDecimalDegrees,
+} from "../coord-convert";
+import { EventEmitter } from "stream";
+import { TypedEmitter } from "tiny-typed-emitter";
 
 /** Currently 10 seconds */
 const RESPONSE_TIMEOUT = 10 * 1000;
@@ -16,25 +21,40 @@ export interface ScooterMessage {
 }
 export type MessageHandler = (msg: ScooterMessage) => void;
 
-export interface ScooterNeedsUpdateEvent {
-    lockId: string;
-    batteryLevel: number;
-    isUnlocked: boolean;
+export interface ScooterStatusEvent {
+	lockId: string;
+	batteryLevel: number;
+	isUnlocked: boolean;
 	isCharging: boolean;
-};
+}
 
-export interface ScooterNeedsLocationUpdateEvent {
+export interface ScooterLockStatusEvent {
+	lockId: string;
+	isUnlocked: boolean;
+}
+
+export interface ScooterLocationEvent {
 	lockId: string;
 	location: [number, number];
 }
 
-export interface NewRoutePointEvent {
-	lockId: string;
-	location: [number, number];
+interface ServiceEvents {
+	scooterLockStatus: (data: ScooterLockStatusEvent) => void;
+	scooterLocation: (data: ScooterLocationEvent) => void;
+	scooterStatus: (data: ScooterStatusEvent) => void;
+	lockIdStashNeeded: () => void;
 }
+export class ServiceEventEmitter extends TypedEmitter<ServiceEvents> {}
+
+interface CommandEvents {
+	[key: string]: MessageHandler;
+}
+class CommandEventEmitter extends TypedEmitter<CommandEvents> {}
+
+interface CommandMiddlewareEvents extends CommandEvents {}
+class CommandMiddlewareEventEmitter extends TypedEmitter<CommandMiddlewareEvents> {}
 
 export abstract class ScooterTcpService {
-
 	private static _instance: ScooterTcpService | null;
 	static get instance() {
 		if (!this._instance) this._instance = new ScooterTcpServiceInstance();
@@ -43,21 +63,27 @@ export abstract class ScooterTcpService {
 
 	private _sock = new net.Socket();
 	private _logger: Logger | null = null;
-	/** An array of ONCE event handlers attached to specific lockids and commands from the server */
-	private _eventQueue: Record<string, Queue<MessageHandler>> = {};
+	private _commandQueue = new CommandEventEmitter();
+	private _commandMiddleware = new CommandMiddlewareEventEmitter();
 
-	public onScooterNeedsUpdate = new TypedEvent<ScooterNeedsUpdateEvent>();
-	public onScooterNeedsLocationUpdate =
-		new TypedEvent<ScooterNeedsLocationUpdateEvent>();
-	public onLockIdStashNeeded = new TypedEvent<void>();
-	// public onNewRoutePoint = new TypedEvent<NewRoutePointEvent>();
+	public events = new ServiceEventEmitter();
 
 	async init(logger?: Logger) {
+		this._logger = logger ?? null;
 		if (Config.get("HAS_TCP") !== "true") {
-			console.log("TCP scooter interactivity is turned off\nTo turn scooter interactivity on, set env HAS_TCP to 'true'\nPlease note that attempting to interact with real scooters in this state will likely result in crashes".yellow.underline);
+			(this._logger || console).log(
+				"TCP scooter interactivity is turned off\nTo turn scooter interactivity on, set env HAS_TCP to 'true'\nPlease note that attempting to interact with real scooters in this state will likely result in crashes"
+					.yellow.underline
+			);
 			return;
 		}
-		this._logger = logger ?? null;
+		// set up command middleware
+		this._commandMiddleware
+			.on("H0", (m) => this.handleH0(m))
+			.on("D0", (m) => this.handleD0(m))
+			.on("S6", (m) => this.handleS6(m))
+			.on("L0", (m) => this.handleL0(m))
+			.on("L1", (m) => this.handleL1(m));
 		this._sock.setKeepAlive(true);
 		this._sock.on("data", (b) => this.handleRawData(b));
 		this._sock.on("close", (hadError) => {
@@ -118,11 +144,11 @@ export abstract class ScooterTcpService {
 				`${power}% ` +
 				`${charging === "0" ? "not-charging" : "charging"}`
 		);
-		this.onScooterNeedsUpdate.emit({
+		this.events.emit("scooterStatus", {
 			lockId: msg.lockId,
 			batteryLevel: parseInt(power),
 			isUnlocked: lockStatus === "0",
-			isCharging: charging === "1"
+			isCharging: charging === "1",
 		});
 	}
 
@@ -149,11 +175,11 @@ export abstract class ScooterTcpService {
 				`${signal}/32`
 		);
 		// push to scooter
-		this.onScooterNeedsUpdate.emit({
+		this.events.emit("scooterStatus", {
 			lockId: msg.lockId,
 			batteryLevel: parseInt(power),
 			isUnlocked: lockStatus === "0",
-			isCharging: charging === "1"
+			isCharging: charging === "1",
 		});
 	}
 
@@ -172,34 +198,40 @@ export abstract class ScooterTcpService {
 		]);
 		this._logger?.log(`Scooter said it's at ${coords}`);
 		// push to scooter
-		this.onScooterNeedsLocationUpdate.emit({
+		this.events.emit("scooterLocation", {
 			lockId: msg.lockId,
 			location: coords,
 		});
 	}
 
-	private handleParsedMessage(message: ScooterMessage) {
-		// do handling for special messages
-		switch (message.command) {
-			case "H0":
-				this.handleH0(message);
-				break;
-			case "S6":
-				this.handleS6(message);
-				break;
-			case "D0":
-				this.handleD0(message);
-				break;
+	private handleL0(msg: ScooterMessage) {
+		const [ isSuccess ] = msg.params;
+		// 0 means it was successful
+		if (isSuccess === "0") {
+			this.events.emit("scooterLockStatus", {
+				lockId: msg.lockId,
+				isUnlocked: true
+			});
 		}
+	}
+
+	private handleL1(msg: ScooterMessage) {
+		const [ isSuccess ] = msg.params;
+		// 0 means it was successful
+		if (isSuccess === "0") {
+			this.events.emit("scooterLockStatus", {
+				lockId: msg.lockId,
+				isUnlocked: false
+			});
+		}
+	}
+
+	private handleParsedMessage(message: ScooterMessage) {
+		// call middleware
+		this._commandMiddleware.emit(message.command, message);
 		// call handlers
 		const key = message.lockId + message.command;
-		const handlers = this._eventQueue[key];
-		if (handlers) {
-			while (handlers.length !== 0) {
-				const handler = handlers.dequeue();
-				handler(message);
-			}
-		}
+		this._commandQueue.emit(key, message);
 	}
 
 	private addToQueue(
@@ -208,12 +240,13 @@ export abstract class ScooterTcpService {
 		handler: MessageHandler
 	) {
 		const key = lockId + command;
-		if (!Object.keys(this._eventQueue).includes(key))
-			this._eventQueue[key] = new Queue<MessageHandler>();
-		this._eventQueue[key].enqueue((m) => handler(m));
+		this._commandQueue.once(key, handler);
 	}
 
-	private async sendCommandAndWait(message: Omit<ScooterMessage, "vendor">, options?: { timeoutMs?: number }) {
+	private async sendCommandAndWait(
+		message: Omit<ScooterMessage, "vendor">,
+		options?: { timeoutMs?: number }
+	) {
 		return new Promise<ScooterMessage>((resolve, reject) => {
 			let isPending = true;
 			this.addToQueue(message.lockId, message.command, (m) => {
@@ -257,11 +290,14 @@ export abstract class ScooterTcpService {
 				lockId,
 				params: [],
 			}).catch(() => {});
-			await this.sendCommandAndWait({
-				command: "D0",
-				lockId,
-				params: [],
-			}, { timeoutMs: 60 * 1000 }).catch(() => {});
+			await this.sendCommandAndWait(
+				{
+					command: "D0",
+					lockId,
+					params: [],
+				},
+				{ timeoutMs: 60 * 1000 }
+			).catch(() => {});
 		}
 	}
 
@@ -364,7 +400,7 @@ export abstract class ScooterTcpService {
 		await this.sendCommand({
 			command: "D1",
 			lockId,
-			params: ["5"] // seconds interval the scooter should send location at
+			params: ["5"], // seconds interval the scooter should send location at
 		});
 	}
 
@@ -372,7 +408,7 @@ export abstract class ScooterTcpService {
 		await this.sendCommand({
 			command: "D1",
 			lockId,
-			params: ["0"]
+			params: ["0"],
 		});
 	}
 }

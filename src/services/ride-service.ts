@@ -25,7 +25,7 @@ export default abstract class RideService extends CrudService<Ride> {
 
 	constructor() {
 		super(RideModel);
-		this.tcpService.onScooterNeedsLocationUpdate.on(async (data) => {
+		this.tcpService.events.on("scooterLocation", async (data) => {
 			const { lockId, location } = data;
 			const scooter = await this.scooterService.findOne({ lockId });
 			if (!scooter) {
@@ -194,6 +194,11 @@ export default abstract class RideService extends CrudService<Ride> {
 			} catch (_) {
 				this._logger.log("Scooter did not respond while ending ride".red);
 			}
+		} else {
+			await this.scooterService.updateOne(
+				{ _id: ride.scooterId },
+				{ $set: { isUnlocked: true } }
+			);
 		}
 		// end in db
 		const newRide = await this.model.findOneAndUpdate(
@@ -212,7 +217,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		);
 		await this.scooterService.updateOne(
 			{ _id: ride.scooterId },
-			{ $set: { status: "available", isUnlocked: true } }
+			{ $set: { status: "available" } }
 		);
 		return {
 			ride: newRide,
@@ -243,13 +248,14 @@ export default abstract class RideService extends CrudService<Ride> {
 				head: headlights,
 				tail: taillights,
 			});
-		}
-		// update scooter n set locked
-		if (lock !== undefined) {
-			await this.scooterService.updateOne(
-				{ _id: scooter._id },
-				{ $set: { isUnlocked: !lock } }
-			);
+		} else {
+			// update scooter n set locked
+			if (lock !== undefined) {
+				await this.scooterService.updateOne(
+					{ _id: scooter._id },
+					{ $set: { isUnlocked: !lock } }
+				);
+			}
 		}
 	}
 
