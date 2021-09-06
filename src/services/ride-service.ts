@@ -67,7 +67,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		}
 		const duration =
 			-1 *
-			DateTime.fromJSDate(ride.startedAt).diffNow().as("milliseconds");
+			(ride.endedAt ?
+				DateTime.fromJSDate(ride.startedAt).diff(DateTime.fromJSDate(ride.endedAt)).as("milliseconds") :
+				DateTime.fromJSDate(ride.startedAt).diffNow().as("milliseconds"));
 		const price = Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute
 		return {
 			linearDistance,
