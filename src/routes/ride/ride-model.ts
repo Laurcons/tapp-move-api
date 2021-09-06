@@ -43,4 +43,6 @@ export const rideSchema = new mongoose.Schema({
     userId: mongoose.Types.ObjectId
 });
 
+rideSchema.index({ status: 1 }, { partialFilterExpression: { status: "ongoing" } });
+
 export const RideModel = mongoose.model<Ride>("ride", rideSchema);

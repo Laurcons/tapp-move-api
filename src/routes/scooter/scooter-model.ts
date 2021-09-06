@@ -45,4 +45,6 @@ export const scooterSchema = new mongoose.Schema({
     }
 });
 
+scooterSchema.index({ status: 1 }, { partialFilterExpression: { status: "available" } });
+
 export const ScooterModel = mongoose.model<Scooter>("scooter", scooterSchema);
