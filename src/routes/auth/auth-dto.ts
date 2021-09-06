@@ -5,7 +5,7 @@ export const passwordRegex = /^.{4,}$/;
 
 export class RegisterBodyDTO {
 	@cv.IsString()
-	@cv.Matches(usernameRegex, { message: "Your username can only contain letters, numbers, dashes, underscores and dots."})
+	@cv.Matches(usernameRegex, { message: "Your username can only contain 3 to 16 letters, numbers, dashes, underscores and dots."})
 	username!: string;
 
 	@cv.IsEmail({}, { message: "The email is not valid." })
