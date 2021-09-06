@@ -356,7 +356,7 @@ export abstract class ScooterTcpService {
 		const lonStr = response.params[5];
 		return decimalMinutesToDecimalDegrees([
 			[parseInt(latStr.substr(0, 2)), parseFloat(latStr.slice(2))],
-			[parseInt(lonStr.substr(0, 2)), parseFloat(lonStr.slice(2))],
+			[parseInt(lonStr.substr(0, 3)), parseFloat(lonStr.slice(3))],
 		]);
 	}
 
