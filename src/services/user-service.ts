@@ -181,5 +181,19 @@ export default abstract class UserService extends CrudService<User> {
 			{ $set: { driversLicenseKey: key } }
 		);
 	};
+
+	incrementRideCount = async (user: User) => {
+		const newUser = await this.model.findOneAndUpdate(
+			{ _id: user._id },
+			{ $inc: { totalRides: 1 } },
+			{ new: true }
+		);
+		if (!newUser)
+			throw ApiError.userNotFound;
+		await this.sessionService.updateOne(
+			{ "user._id": user._id },
+			{ $set: { user: newUser } }
+		);
+	}
 }
 class UserServiceInstance extends UserService {}

@@ -150,11 +150,7 @@ export default abstract class RideService extends CrudService<Ride> {
 				userId: user._id,
 			});
 			// increment ride counter on user
-			user.totalRides++;
-			this.userService.updateOne(
-				{ _id: user._id },
-				{ $set: { totalRides: user.totalRides } }
-			);
+			await this.userService.incrementRideCount(user);
 			return ride;
 		} catch (ex) {
 			// scooter.status = "available";
