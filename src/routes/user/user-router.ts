@@ -21,8 +21,8 @@ userRouter.patch(
 );
 userRouter.post(
 	"/me/driversLicense",
-	authenticate("user"),
 	multer().single("image"),
+	authenticate("user"),
 	asyncWrap(UserController.uploadDriversLicense)
 );
 userRouter.post(
