@@ -48,12 +48,12 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
             // everything should be good now
             _logger?.log(`User ${session.user.username} token ...${token.substr(-5)}`);
             req.session = session;
-            // next();
+            next();
         } else if (type === "admin") {
             const session = await adminAuthService.verifyToken(jwt, options);
             _logger?.log(`Admin ${session.admin.email} token ...${token.substr(-5)}`);
             req.session = session;
-            // next();
+            next();
         }
     });
 }
