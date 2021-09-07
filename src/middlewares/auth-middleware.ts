@@ -6,6 +6,7 @@ import ApiError from '../api-error';
 import { asyncWrap } from '../async-wrap';
 import Config from '../environment';
 import { Logger } from '../logger';
+import { AdminAuthService } from '../services/admin-auth-service';
 
 let _logger: Logger | null = null;
 
@@ -13,8 +14,15 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
     return asyncWrap(async (req: Request, res: Response, next: NextFunction) => {
         // TODO: update exception handling to newer standards
         const sessionService = SessionService.instance;
+        const adminAuthService = AdminAuthService.instance;
         const regex = /^Bearer ([a-zA-Z0-9-_.]+)$/;
-        const regexResult = regex.exec(req.headers.authorization ?? "");
+        let regexResultTEMP;
+        try {
+            regexResultTEMP = regex.exec(req.headers.authorization ?? "");
+        } catch (ex) {
+            throw ApiError.invalidToken;
+        }
+        const regexResult = regexResultTEMP;
         if (!regexResult)
             throw ApiError.invalidToken;
         const token = regexResult[1];
@@ -40,15 +48,12 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
             // everything should be good now
             _logger?.log(`User ${session.user.username} token ...${token.substr(-5)}`);
             req.session = session;
-            next();
+            // next();
         } else if (type === "admin") {
-            const session = await sessionService.findSessionForAdmin(userId, options?.withPassword ?? false);
-            if (!session || session.expires.getTime() < Date.now()) {
-				throw ApiError.invalidToken;
-			}
+            const session = await adminAuthService.verifyToken(jwt, options);
             _logger?.log(`Admin ${session.admin.email} token ...${token.substr(-5)}`);
             req.session = session;
-            next();
+            // next();
         }
     });
 }

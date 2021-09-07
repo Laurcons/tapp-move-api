@@ -21,8 +21,11 @@ import RideService from "./services/ride-service";
 import ScooterService from "./services/scooter-service";
 import SessionService from "./services/session-service";
 import UserService from "./services/user-service";
+import { WebsocketService } from "./services/websocket-service";
+import http from "http";
 
 const app = express();
+const httpServer = http.createServer(app);
 
 // we don't use Config.get here because it might not exist:
 //  it is only supplied by Heroku
@@ -49,14 +52,19 @@ app.use(handleErrors(new Logger({ prefix: "exception" })));
 const logger = new Logger({ prefix: "init" });
 
 (async function () {
+
 	logger.log("Application started");
 	setAuthLogger(new Logger({ prefix: "auth" }));
+
 	logger.log("Connecting to database...");
 	await mongoConnect();
+
 	logger.log("Initializing S3...");
 	AwsService.instance.init();
+
 	logger.log("Connecting to scooter TCP server...");
 	await ScooterTcpService.instance.init(new Logger({ prefix: "TCP" }));
+
 	logger.log("Creating service instances...");
 	AdminAuthService.instance;
 	AwsService.instance;
@@ -64,9 +72,15 @@ const logger = new Logger({ prefix: "init" });
 	RideService.instance;
 	ScooterService.instance;
 	SessionService.instance;
+	WebsocketService.instance;
 	UserService.instance;
+
 	await listenAsync();
 	logger.log(`Listening on ${PORT}`.rainbow);
+
+	logger.log("Attaching websocket...");
+	WebsocketService.instance.attach(httpServer);
+	
 	if (Config.get("HAS_TCP") === "true") {
 		logger.log(`Sending scooter greetings...`);
 		await ScooterTcpService.instance.sendGreetings();
@@ -74,10 +88,11 @@ const logger = new Logger({ prefix: "init" });
 		logger.log("Scooter greetings were skipped");
 	}
 	logger.log("Initialization finished");
+	
 })();
 
 function listenAsync() {
 	return new Promise<void>((resolve) => {
-		app.listen(PORT, resolve);
+		httpServer.listen(PORT, resolve);
 	});
 }
