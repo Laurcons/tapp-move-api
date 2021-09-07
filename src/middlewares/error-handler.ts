@@ -26,10 +26,10 @@ export default function handleErrors(logger?: Logger) {
 				relationId,
 			});
         } else {
-            res.status(500).json({
+            res.status(400).json({
                 status: "internal-error",
                 relationId
-            })
+            });
         }
         
     }
