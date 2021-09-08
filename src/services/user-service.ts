@@ -185,7 +185,7 @@ export default abstract class UserService extends CrudService<User> {
 		const key = await this.awsService.uploadDriversLicense(user._id, image);
 		await this.model.updateOne(
 			{ _id: user._id },
-			{ $set: { driversLicenseKey: key } }
+			{ $set: { driversLicenseKey: key, isLicenseValid: true } }
 		);
 	};
 

@@ -10,6 +10,7 @@ export interface User extends mongoose.Document {
 	totalRides: number;
 	forgotPasswordToken?: string;
 	driversLicenseKey?: string;
+	isLicenseValid?: boolean;
 }
 
 export const userSchema = new mongoose.Schema({
@@ -42,7 +43,11 @@ export const userSchema = new mongoose.Schema({
 	driversLicenseKey: {
 		type: String,
 		required: false
-	}
+	},
+	isLicenseValid: {
+		type: Boolean,
+		required: false
+	},
 });
 
 export const UserModel = mongoose.model<User>("user", userSchema);
