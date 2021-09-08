@@ -2,7 +2,7 @@ import UserService from "../../../services/user-service";
 import { Request, Response } from "express";
 import RideService from "../../../services/ride-service";
 import AwsService from "../../../services/aws-service";
-import { UserIdParamsDTO } from "./admin-users-dto";
+import { PaginationQueryDTO, UserIdParamsDTO } from "./admin-users-dto";
 import ApiError from "../../../api-error";
 import ScooterService from "../../../services/scooter-service";
 
@@ -52,18 +52,52 @@ class AdminUserController {
 	};
 
 	getRidesForUser = async (
-		req: Request<Partial<UserIdParamsDTO>>,
+		req: Request<Partial<UserIdParamsDTO>, {}, {}, PaginationQueryDTO>,
 		res: Response
 	) => {
 		const { id } = req.params as UserIdParamsDTO;
+		const start = parseInt(req.query.start ?? "0");
+		const count = parseInt(req.query.count ?? "5");
 		const user = await this.userService.findId(id);
 		if (!user) throw ApiError.userNotFound;
 		const rides = await this.rideService
-			.find({ userId: user._id })
+			.aggregate([
+				{ $match: { userId: user._id } },
+				{
+					$addFields: {
+						statusInt: {
+							$cond: [
+								{ $eq: ["$status", "ongoing"] },
+								0,
+								{
+									$cond: [
+										{ $eq: ["$status", "payment-pending"] },
+										1,
+										{
+											$cond: [
+												{
+													$eq: [ "$status", "completed" ],
+												},
+												2,
+												3,
+											],
+										},
+									],
+								},
+							],
+						},
+					},
+				},
+				{ $sort: { statusInt: 1 } },
+				{ $project: { statusInt: 0 } },
+				// stackoverflow did it like this
+				{ $limit: start + count },
+				{ $skip: start },
+			])
 			.then((rides) =>
 				Promise.all(
 					rides.map(async (ride) => ({
-						...ride.toObject(),
+						...ride,
 						route: undefined,
 						...(await this.rideService.calculateRideInfo(ride)),
 						scooter: await this.scooterService.findOne({
@@ -72,8 +106,14 @@ class AdminUserController {
 					}))
 				)
 			);
+		const total = await this.rideService
+			.find({ userId: user._id })
+			.countDocuments();
 		res.json({
 			status: "success",
+			start,
+			count,
+			total,
 			rides,
 		});
 	};

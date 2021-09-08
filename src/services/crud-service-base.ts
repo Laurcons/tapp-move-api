@@ -74,6 +74,10 @@ abstract class CrudService<Doc extends mongoose.Document> {
 		return this.model.deleteOne(conditions);
 	}
 
+	aggregate(pipeline: any[]) {
+		return this.model.aggregate(pipeline);
+	}
+
 	count() {
 		return this.model.countDocuments();
 	}
