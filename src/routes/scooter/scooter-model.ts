@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface Scooter extends mongoose.Document {
-	status: "unavailable" | "booked" | "available";
+	status: "unavailable" | "booked" | "disabled" | "available";
 	code: string; // a 4-character code
 	isDummy: boolean;
 	lockId: string;
@@ -17,7 +17,7 @@ export interface Scooter extends mongoose.Document {
 export const scooterSchema = new mongoose.Schema({
     status: {
         type: String,
-        enum: ["unavailable", "booked", "available"]
+        enum: ["unavailable", "booked", "disabled", "available"]
     },
     code: {
         type: String,
