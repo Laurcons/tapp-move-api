@@ -8,6 +8,7 @@ import ApiError from "../api-error";
 import cryptoRandomString from "crypto-random-string";
 import EmailService from "./email-service";
 import AwsService from "./aws-service";
+import mongoose from "mongoose";
 
 export default abstract class UserService extends CrudService<User> {
 	sessionService = SessionService.instance;
@@ -183,11 +184,21 @@ export default abstract class UserService extends CrudService<User> {
 
 	uploadDriversLicense = async (user: User, image: Express.Multer.File) => {
 		const key = await this.awsService.uploadDriversLicense(user._id, image);
-		await this.model.updateOne(
-			{ _id: user._id },
-			{ $set: { driversLicenseKey: key, isLicenseValid: true } }
-		);
+		await this.setDriversLicense(user._id, key);
 	};
+
+	async setDriversLicense(userId: string, key: string) {
+		const user = await this.model.findOneAndUpdate(
+			{ _id: userId },
+			{ $set: { driversLicenseKey: key, isLicenseValid: true } },
+			{ new: true }
+		).select("-_id");
+		if (!user) throw ApiError.userNotFound;
+		await this.sessionService.updateMany(
+			{ "user._id": mongoose.Types.ObjectId(userId) },
+			{ $set: { user: user.toObject() } }
+		);
+	}
 
 	incrementRideCount = async (user: User) => {
 		const newUser = await this.model.findOneAndUpdate(

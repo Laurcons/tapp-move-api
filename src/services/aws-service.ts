@@ -1,6 +1,8 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import Config from "../environment";
+import { JWTP } from "../jwt-promise";
 
 export default abstract class AwsService {
     private _s3!: S3Client;
@@ -39,6 +41,24 @@ export default abstract class AwsService {
 			Bucket: Config.get("AWS_BUCKET"),
 			Key: key
 		}));
+	}
+
+	async createPresignedPost(key: string, contentType: string, jwtPayload: Record<string, any>) {
+		const jwt = await JWTP.sign(jwtPayload, Config.get("AUTH_SECRET"));
+		const presignedPost = await createPresignedPost(this._s3, {
+			Bucket: Config.get("AWS_BUCKET"),
+			Key: key,
+			Conditions: [
+				[ "content-length-range", 0, 10 * 1024 * 1024 ] // max 10 MB
+			],
+			Expires: 10 * 60, // 10 minutes
+			Fields: {
+				"Content-Type": contentType,
+				success_action_redirect:
+					Config.get("API_URL") + `/uploads/confirm?payload=${jwt}`,
+			}	
+		});
+		return presignedPost;
 	}
 }
 class AwsServiceInstance extends AwsService {}

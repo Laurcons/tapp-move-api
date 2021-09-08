@@ -78,8 +78,8 @@ const logger = new Logger({ prefix: "init" });
 	await listenAsync();
 	logger.log(`Listening on ${PORT}`.rainbow);
 
-	logger.log("Attaching websocket...");
-	WebsocketService.instance.attach(httpServer);
+	// logger.log("Attaching websocket...");
+	// WebsocketService.instance.attach(httpServer);
 	
 	if (Config.get("HAS_TCP") === "true") {
 		logger.log(`Sending scooter greetings...`);
