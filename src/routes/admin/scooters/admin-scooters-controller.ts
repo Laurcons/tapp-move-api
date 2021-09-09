@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
+import RideService from "../../../services/ride-service";
 import ScooterService from "../../../services/scooter-service";
-import { ScooterIdParamsDTO } from "./admin-scooters-dto";
+import { PaginationQueryDTO, ScooterIdParamsDTO } from "./admin-scooters-dto";
+import mongoose from "mongoose";
 
 class AdminScootersController {
     private scooterService = ScooterService.instance;
+    private rideService = RideService.instance;
 
     getAll = async (
         req: Request,
@@ -37,6 +40,35 @@ class AdminScootersController {
         res.json({
             status: "success",
             scooter
+        });
+    }
+
+    getRides = async (
+        req: Request<Partial<ScooterIdParamsDTO>, {}, {}, PaginationQueryDTO>,
+        res: Response
+    ) => {
+        const { id } = req.params as ScooterIdParamsDTO;
+        const start = parseInt(req.query.start ?? "0");
+        const count = parseInt(req.query.count ?? "20");
+        const rides = await this.rideService
+			.getRidesForScooter(id, start, count)
+			.then((rides) =>
+				Promise.all(
+					rides.map(async (ride) => ({
+						...ride,
+						route: undefined,
+						...(await this.rideService.calculateRideInfo(ride)),
+						scooter: await this.scooterService.findOne({
+							_id: ride.scooterId,
+						}),
+					}))
+				)
+			);
+        const total = await this.rideService.find({ scooterId: mongoose.Types.ObjectId(id) }).countDocuments();
+        res.json({
+            status: "success",
+            rides,
+            start, count, total
         });
     }
 

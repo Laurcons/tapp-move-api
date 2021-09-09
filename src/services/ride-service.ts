@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import { Logger } from './../logger';
+import mongoose from "mongoose";
+import { Logger } from "./../logger";
 import { getDistance } from "geolib";
 import { DateTime } from "luxon";
 import ApiError from "../api-error";
@@ -9,13 +9,13 @@ import { User } from "../routes/user/user-model";
 import CrudService from "./crud-service-base";
 import ScooterService from "./scooter-service";
 import { ScooterTcpService } from "./scooter-tcp-service";
-import UserService from './user-service';
+import UserService from "./user-service";
 
 export default abstract class RideService extends CrudService<Ride> {
 	private scooterService = ScooterService.instance;
 	private userService = UserService.instance;
 	private tcpService = ScooterTcpService.instance;
-	private _logger = new Logger({ prefix: "ride-svc"});
+	private _logger = new Logger({ prefix: "ride-svc" });
 
 	private static _instance: RideService | null = null;
 	static get instance() {
@@ -29,10 +29,16 @@ export default abstract class RideService extends CrudService<Ride> {
 			const { lockId, location } = data;
 			const scooter = await this.scooterService.findOne({ lockId });
 			if (!scooter) {
-				this._logger.log("Couldn't find lockId in database in scooterLocation handler".red);
+				this._logger.log(
+					"Couldn't find lockId in database in scooterLocation handler"
+						.red
+				);
 				throw "what";
 			}
-			const ride = await this.model.findOne({ scooterId: scooter._id, status: "ongoing" });
+			const ride = await this.model.findOne({
+				scooterId: scooter._id,
+				status: "ongoing",
+			});
 			if (!ride) {
 				// this means that there isn't any active ride with this scooter:
 				//  we preventively tell it to stop sending at interval (in case it is sending at interval)
@@ -44,7 +50,9 @@ export default abstract class RideService extends CrudService<Ride> {
 			const distance = getDistance(lastPoint, location);
 			// if distance is less than 10 meters, don't add
 			if (distance < 10) {
-				this._logger.log(`Distance since last point was ${distance} <10m so it was ignored`);
+				this._logger.log(
+					`Distance since last point was ${distance} <10m so it was ignored`
+				);
 				return;
 			}
 			// add it
@@ -52,24 +60,30 @@ export default abstract class RideService extends CrudService<Ride> {
 				{ _id: ride._id },
 				{ $push: { route: location } }
 			);
-			this._logger.log(`Added location with d=${distance} for code=${scooter.code}`);
+			this._logger.log(
+				`Added location with d=${distance} for code=${scooter.code}`
+			);
 		});
 	}
 
 	calculateRideInfo(ride: Ride) {
-		const linearDistance = getDistance(ride.route[ride.route.length-1], {
+		const linearDistance = getDistance(ride.route[ride.route.length - 1], {
 			lat: ride.route[0][1],
 			lon: ride.route[0][0],
 		});
 		let pathDistance = 0;
 		for (let i = 0; i < ride.route.length - 1; i++) {
-			pathDistance += getDistance(ride.route[i], ride.route[i+1]);
+			pathDistance += getDistance(ride.route[i], ride.route[i + 1]);
 		}
 		const duration =
 			-1 *
-			(ride.endedAt ?
-				DateTime.fromJSDate(ride.startedAt).diff(DateTime.fromJSDate(ride.endedAt)).as("milliseconds") :
-				DateTime.fromJSDate(ride.startedAt).diffNow().as("milliseconds"));
+			(ride.endedAt
+				? DateTime.fromJSDate(ride.startedAt)
+						.diff(DateTime.fromJSDate(ride.endedAt))
+						.as("milliseconds")
+				: DateTime.fromJSDate(ride.startedAt)
+						.diffNow()
+						.as("milliseconds"));
 		const price = Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute
 		return {
 			linearDistance,
@@ -82,7 +96,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async isUserRiding(user: User): Promise<boolean> {
 		const result = await this.model.findOne({
 			userId: user._id,
-			status: "ongoing"
+			status: "ongoing",
 		});
 		return !!result;
 	}
@@ -90,7 +104,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async getRide(rideId: string, currentLocation: [number, number]) {
 		const ride = await this.model.findOne({
 			_id: mongoose.Types.ObjectId(rideId),
-			status: "ongoing"
+			status: "ongoing",
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride);
@@ -145,8 +159,11 @@ export default abstract class RideService extends CrudService<Ride> {
 			}
 			// create ride
 			const ride = await this.insert({
-				route: [ scooter.location.coordinates ],
-				startLocation: { type: "Point", coordinates: scooter.location.coordinates },
+				route: [scooter.location.coordinates],
+				startLocation: {
+					type: "Point",
+					coordinates: scooter.location.coordinates,
+				},
 				status: "ongoing",
 				scooterId: scooter._id,
 				userId: user._id,
@@ -162,8 +179,7 @@ export default abstract class RideService extends CrudService<Ride> {
 				{ $set: { status: "available" } }
 			);
 			console.log(ex);
-			if (ex instanceof ApiError)
-				throw ex;
+			if (ex instanceof ApiError) throw ex;
 			throw ApiError.scooterUnavailable;
 		}
 	}
@@ -171,7 +187,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async endRide(rideId: string, currentLocation: [number, number]) {
 		const ride = await this.model.findOne({
 			_id: mongoose.Types.ObjectId(rideId),
-			status: "ongoing"
+			status: "ongoing",
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride);
@@ -186,7 +202,9 @@ export default abstract class RideService extends CrudService<Ride> {
 				if (scooter.isUnlocked)
 					await this.tcpService.lockScooter(scooter.lockId);
 			} catch (_) {
-				this._logger.log("Scooter did not respond while ending ride".red);
+				this._logger.log(
+					"Scooter did not respond while ending ride".red
+				);
 			}
 		} else {
 			await this.scooterService.updateOne(
@@ -222,7 +240,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	async updateRide(rideId: string, settings: PatchBodyDTO) {
 		const ride = await this.findOne({
 			_id: mongoose.Types.ObjectId(rideId),
-			status: "ongoing"
+			status: "ongoing",
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		// retrieve scooter
@@ -261,23 +279,64 @@ export default abstract class RideService extends CrudService<Ride> {
 		return rides;
 	}
 
-	async getRidesForUser(user: User, status?: RideStatus) {
+	async getRidesForUser(userId: string, start: number, count: number, status?: RideStatus) {
 		let cond: Record<string, any> = {
-			userId: user._id
+			userId: mongoose.Types.ObjectId(userId)
 		};
-		if (status)
-			cond.status = status;
-		return await this.model.find(cond);
+		if (status) cond.status = status;
+		return this.getSortedAndPaginatedRides({ $match: cond }, start, count);
+	}
+
+	private async getSortedAndPaginatedRides(match: any, start: number, count: number) {
+		return this.model.aggregate([
+			match,
+			{
+				$addFields: {
+					statusInt: {
+						$cond: [
+							{ $eq: ["$status", "ongoing"] },
+							0,
+							{
+								$cond: [
+									{ $eq: ["$status", "payment-pending"] },
+									1,
+									{
+										$cond: [
+											{
+												$eq: ["$status", "completed"],
+											},
+											2,
+											3,
+										],
+									},
+								],
+							},
+						],
+					},
+				},
+			},
+			{ $sort: { statusInt: 1, startedAt: -1 } },
+			{ $project: { statusInt: 0 } },
+			// stackoverflow did it like this
+			{ $limit: start + count },
+			{ $skip: start },
+		]);
+	}
+
+	async getRidesForScooter(scooterId: string, start: number, count: number) {
+		return this.getSortedAndPaginatedRides(
+			{ $match: { scooterId: mongoose.Types.ObjectId(scooterId) } },
+			start, count
+		);
 	}
 
 	async pay(rideId: string) {
 		const ride = this.model.findOneAndUpdate(
 			{ _id: mongoose.Types.ObjectId(rideId) },
 			{ status: "completed" },
-			{ new: true}
+			{ new: true }
 		);
 		return ride;
 	}
-
 }
 class RideServiceInstance extends RideService {}

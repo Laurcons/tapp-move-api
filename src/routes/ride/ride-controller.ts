@@ -119,7 +119,7 @@ class RideController {
 		res: Response
 	) => {
 		const { status } = req.query;
-		const rides = await this.rideService.getRidesForUser(req.session.user, status);
+		const rides = await this.rideService.getRidesForUser(req.session.user._id, 0, 100000, status);
 		res.json({
 			status: "success",
 			rides

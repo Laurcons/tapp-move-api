@@ -16,7 +16,7 @@ class AdminUserController {
 		const usersPlain = await this.userService.find({});
 		const users = await Promise.all(
 			usersPlain.map(async (user) => {
-				const rides = await this.rideService.getRidesForUser(user);
+				const rides = await this.rideService.getRidesForUser(user._id, 0, 1000000);
 				// const driversLicense =
 				//     user.driversLicenseKey ?
 				//     await this.awsService.getSignedUrl(user.driversLicenseKey) :
@@ -61,39 +61,7 @@ class AdminUserController {
 		const user = await this.userService.findId(id);
 		if (!user) throw ApiError.userNotFound;
 		const rides = await this.rideService
-			.aggregate([
-				{ $match: { userId: user._id } },
-				{
-					$addFields: {
-						statusInt: {
-							$cond: [
-								{ $eq: ["$status", "ongoing"] },
-								0,
-								{
-									$cond: [
-										{ $eq: ["$status", "payment-pending"] },
-										1,
-										{
-											$cond: [
-												{
-													$eq: [ "$status", "completed" ],
-												},
-												2,
-												3,
-											],
-										},
-									],
-								},
-							],
-						},
-					},
-				},
-				{ $sort: { statusInt: 1, startedAt: -1 } },
-				{ $project: { statusInt: 0 } },
-				// stackoverflow did it like this
-				{ $limit: start + count },
-				{ $skip: start },
-			])
+			.getRidesForUser(user._id, start, count)
 			.then((rides) =>
 				Promise.all(
 					rides.map(async (ride) => ({

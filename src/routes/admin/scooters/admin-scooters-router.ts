@@ -3,7 +3,7 @@ import { asyncWrap } from "../../../async-wrap";
 import authenticate from "../../../middlewares/auth-middleware";
 import validate from "../../../middlewares/validate-middleware";
 import AdminScootersController from "./admin-scooters-controller";
-import { ScooterIdParamsDTO } from "./admin-scooters-dto";
+import { PaginationQueryDTO, ScooterIdParamsDTO } from "./admin-scooters-dto";
 
 const scootersRouter = express.Router();
 
@@ -23,6 +23,12 @@ scootersRouter.post(
     authenticate("admin"),
     validate({ params: ScooterIdParamsDTO }),
     asyncWrap(AdminScootersController.toggleDisabled)
+);
+scootersRouter.get(
+    "/:id/rides",
+    authenticate("admin"),
+    validate({ params: ScooterIdParamsDTO, query: PaginationQueryDTO}),
+    asyncWrap(AdminScootersController.getRides)
 );
 
 export default scootersRouter;
