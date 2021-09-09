@@ -187,15 +187,17 @@ export default abstract class UserService extends CrudService<User> {
 		await this.setDriversLicense(user._id, key);
 	};
 
-	async setDriversLicense(userId: string, key: string) {
+	async setDriversLicense(userId: mongoose.Types.ObjectId | string, key: string) {
+		if (typeof userId === "string")
+			userId = mongoose.Types.ObjectId(userId);
 		const user = await this.model.findOneAndUpdate(
 			{ _id: userId },
 			{ $set: { driversLicenseKey: key, isLicenseValid: true } },
 			{ new: true }
-		).select("-_id");
+		);
 		if (!user) throw ApiError.userNotFound;
 		await this.sessionService.updateMany(
-			{ "user._id": mongoose.Types.ObjectId(userId) },
+			{ "user._id": userId },
 			{ $set: { user: user.toObject() } }
 		);
 	}
