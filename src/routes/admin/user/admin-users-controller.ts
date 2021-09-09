@@ -88,7 +88,7 @@ class AdminUserController {
 						},
 					},
 				},
-				{ $sort: { statusInt: 1 } },
+				{ $sort: { statusInt: 1, startedAt: -1 } },
 				{ $project: { statusInt: 0 } },
 				// stackoverflow did it like this
 				{ $limit: start + count },
