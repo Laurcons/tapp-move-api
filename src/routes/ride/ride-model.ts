@@ -1,8 +1,11 @@
 import { ScooterModel } from './../scooter/scooter-model';
 import mongoose from 'mongoose';
 
+export type RideStatus = "ongoing" | "payment-pending" | "completed";
+export const RideStatuses = ["ongoing", "payment-pending", "completed"];
+
 export interface Ride extends mongoose.Document {
-    status: "ongoing" | "payment-pending" | "completed";
+    status: RideStatus;
 	route: [[number, number]];
     startLocation: {
         type: "Point",
@@ -21,7 +24,7 @@ export interface Ride extends mongoose.Document {
 export const rideSchema = new mongoose.Schema({
     status: {
         type: String,
-        enum: [ "ongoing", "payment-pending", "completed" ],
+        enum: RideStatuses,
     },
     route: [[Number, Number]],
     startLocation: {

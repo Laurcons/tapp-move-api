@@ -4,7 +4,7 @@ import { getDistance } from "geolib";
 import { DateTime } from "luxon";
 import ApiError from "../api-error";
 import { PatchBodyDTO } from "../routes/ride/ride-dto";
-import { Ride, RideModel } from "../routes/ride/ride-model";
+import { Ride, RideModel, RideStatus } from "../routes/ride/ride-model";
 import { User } from "../routes/user/user-model";
 import CrudService from "./crud-service-base";
 import ScooterService from "./scooter-service";
@@ -261,8 +261,13 @@ export default abstract class RideService extends CrudService<Ride> {
 		return rides;
 	}
 
-	async getRidesForUser(user: User) {
-		return await this.model.find({ userId: user._id });
+	async getRidesForUser(user: User, status?: RideStatus) {
+		let cond: Record<string, any> = {
+			userId: user._id
+		};
+		if (status)
+			cond.status = status;
+		return await this.model.find(cond);
 	}
 
 	async pay(rideId: string) {

@@ -1,4 +1,4 @@
-import { LocationQueryDTO, PaginationQueryDTO, PatchBodyDTO, RideIdParamsDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
+import { GetRidesQueryDTO, LocationQueryDTO, PaginationQueryDTO, PatchBodyDTO, RideIdParamsDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
 import { Ride } from "./ride-model";
@@ -111,6 +111,18 @@ class RideController {
 		res.json({
 			status: "success",
 			ride
+		});
+	}
+
+	getRides = async (
+		req: Request<{}, {}, {}, GetRidesQueryDTO>,
+		res: Response
+	) => {
+		const { status } = req.query;
+		const rides = await this.rideService.getRidesForUser(req.session.user, status);
+		res.json({
+			status: "success",
+			rides
 		});
 	}
 }

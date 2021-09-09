@@ -1,5 +1,12 @@
 import * as cv from "class-validator";
 import { IsObjectIdString } from "../../dto-constraints/is-object-id-string";
+import { RideStatus, RideStatuses } from "./ride-model";
+
+export class GetRidesQueryDTO {
+    @cv.IsIn(RideStatuses)
+    @cv.IsOptional()
+    status?: RideStatus;
+}
 
 export class RideIdParamsDTO {
     @IsObjectIdString()
