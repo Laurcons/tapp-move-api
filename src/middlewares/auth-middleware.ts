@@ -41,7 +41,7 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
             throw ApiError.invalidToken;
         // now find the user
         if (type === "user") {
-            const session = await sessionService.findSessionForUser(userId, options?.withPassword ?? false);
+            const session = await sessionService.findSessionForUserJwt(token, options?.withPassword ?? false);
             if (!session || session.expires.getTime() < Date.now()) {
                 throw ApiError.invalidToken;
             }
@@ -51,6 +51,9 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
             next();
         } else if (type === "admin") {
             const session = await adminAuthService.verifyToken(jwt, options);
+            if (!session || session.expires.getTime() < Date.now()) {
+				throw ApiError.invalidToken;
+			}
             _logger?.log(`Admin ${session.admin.email} token ...${token.substr(-5)}`);
             req.session = session;
             next();

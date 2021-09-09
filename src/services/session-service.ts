@@ -12,10 +12,10 @@ export default abstract class SessionService extends CrudService<Session> {
 		super(SessionModel);
 	}
 
-	async findSessionForUser(id: string, withPassword?: boolean) {
+	async findSessionForUserJwt(jwt: string, withPassword?: boolean) {
 		const sessionPromise = this.model
 			.findOne({
-				"user._id": id,
+				jwt,
 				type: "user",
 			})
 			.sort({ createdAt: -1 });

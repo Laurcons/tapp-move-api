@@ -7,10 +7,10 @@ export default function handleErrors(logger?: Logger) {
     return (err: any, req: Request, res: Response, next: NextFunction) => {
         
         const relationId = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-        if (!(err instanceof ApiError)) {
+        // if (!(err instanceof ApiError)) {
             logger?.log(`Relation id ${relationId}`);
             logger?.log(err);
-        }
+        // }
 
         if (err instanceof ApiError) {
             res.status(err.status).json({
