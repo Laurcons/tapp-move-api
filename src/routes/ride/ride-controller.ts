@@ -99,6 +99,20 @@ class RideController {
 			rides,
 		});
 	};
+
+	pay = async (
+		req: Request<Partial<RideIdParamsDTO>>,
+		res: Response<{ status: string; ride: Ride }>
+	) => {
+		const { id } = req.params as RideIdParamsDTO;
+		const ride = await this.rideService.pay(id);
+		if (!ride)
+			throw ApiError.rideNotFound;
+		res.json({
+			status: "success",
+			ride
+		});
+	}
 }
 
 export default new RideController();

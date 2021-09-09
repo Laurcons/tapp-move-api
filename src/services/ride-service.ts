@@ -203,7 +203,7 @@ export default abstract class RideService extends CrudService<Ride> {
 						type: "Point",
 						coordinates: currentLocation,
 					},
-					status: "completed",
+					status: "payment-pending",
 					endedAt: new Date(),
 				},
 			},
@@ -264,5 +264,15 @@ export default abstract class RideService extends CrudService<Ride> {
 	async getRidesForUser(user: User) {
 		return await this.model.find({ userId: user._id });
 	}
+
+	async pay(rideId: string) {
+		const ride = this.model.findOneAndUpdate(
+			{ _id: mongoose.Types.ObjectId(rideId) },
+			{ status: "completed" },
+			{ new: true}
+		);
+		return ride;
+	}
+
 }
 class RideServiceInstance extends RideService {}

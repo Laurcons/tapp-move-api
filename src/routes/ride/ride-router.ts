@@ -36,5 +36,11 @@ rideRouter.patch(
 	validate({ params: RideIdParamsDTO, body: PatchBodyDTO }),
 	asyncWrap(RideController.patch)
 );
+rideRouter.post(
+	"/:id/pay",
+	authenticate("user"),
+	validate({ params: RideIdParamsDTO }),
+	asyncWrap(RideController.pay)
+);
 
 export default rideRouter;
