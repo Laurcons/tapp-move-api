@@ -3,6 +3,7 @@ import CrudService from "./crud-service-base";
 import { getDistance } from "geolib";
 import ApiError from "../api-error";
 import { ScooterTcpService } from "./scooter-tcp-service";
+import mongoose from "mongoose";
 
 export default abstract class ScooterService extends CrudService<Scooter> {
 	private tcpService = ScooterTcpService.instance;
@@ -50,6 +51,10 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 	async tryBookScooter(code: string): Promise<Scooter | null> {
 		const scooter = await this.model.findOneAndUpdate({ status: "available", code }, { status: "booked" }, { new: true });
 		return scooter;
+	}
+
+	async findAll() {
+		return await this.model.find({});
 	}
 
 	async findAllNearAndUnbooked(coordinates: [number, number]) {
@@ -102,6 +107,15 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 			code: { $not: { $regex: /^DMY/ } },
 		});
 		return scooters.map((s) => s.lockId);
+	}
+
+	async toggleDisabledStatus(id: string) {
+		const scooter = await this.model.findOneAndUpdate(
+			{ _id: mongoose.Types.ObjectId(id) },
+			[ { $set: { status: { $cond: [ { $eq: ["$status", "disabled"] }, "available", "disabled" ] } } } ],
+			{ new: true }
+		);
+		return scooter;
 	}
 }
 class ScooterServiceInstance extends ScooterService {}
