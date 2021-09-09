@@ -22,4 +22,5 @@ export default class ApiError extends Error {
     static scooterUnavailable = new ApiError(400, "scooter-unavailable", "This scooter is unavailable");
     static fileNotUploaded = new ApiError(400, "file-not-uploaded", "You need to upload a file!");
     static invalidToken = new ApiError(400, "invalid-token", "The received token (if at all received) is not valid. Try logging in again!");
+    static userSuspended = new ApiError(400, "user-suspended", "This user is suspended.");
 }

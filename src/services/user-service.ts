@@ -77,6 +77,9 @@ export default abstract class UserService extends CrudService<User> {
 	login = async (email: string, password: string) => {
 		const user = await this.model.findOne({ email }).select("+password");
 		if (!user) throw ApiError.emailPasswordIncorrect;
+		if (user.suspendedReason) {
+			throw ApiError.userSuspended;
+		}
 		if (!(await this.verifyPassword(password, user.password)))
 			throw ApiError.emailPasswordIncorrect;
 		// remove this step with caution: this step reselects the user without the
@@ -214,6 +217,18 @@ export default abstract class UserService extends CrudService<User> {
 			{ "user._id": user._id },
 			{ $set: { user: newUser } }
 		);
+	}
+
+	async suspendUser(userId: string, reason: string) {
+		const user = await this.model.findOneAndUpdate(
+			{ _id: mongoose.Types.ObjectId(userId) },
+			{ $set: { suspendedReason: reason } },
+			{ new: true }
+		);
+		await this.sessionService.deleteMany(
+			{ "user._id": mongoose.Types.ObjectId(userId) }
+		);
+		return user;
 	}
 }
 class UserServiceInstance extends UserService {}

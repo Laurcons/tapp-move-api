@@ -2,7 +2,7 @@ import UserService from "../../../services/user-service";
 import { Request, Response } from "express";
 import RideService from "../../../services/ride-service";
 import AwsService from "../../../services/aws-service";
-import { PaginationQueryDTO, UserIdParamsDTO } from "./admin-users-dto";
+import { PaginationQueryDTO, SuspendUserBodyDTO, UserIdParamsDTO } from "./admin-users-dto";
 import ApiError from "../../../api-error";
 import ScooterService from "../../../services/scooter-service";
 
@@ -115,6 +115,16 @@ class AdminUserController {
 			count,
 			total,
 			rides,
+		});
+	};
+
+	suspend = async (req: Request<Partial<UserIdParamsDTO>, {}, SuspendUserBodyDTO>, res: Response) => {
+		const { reason } = req.body;
+		const { id } = req.params as UserIdParamsDTO;
+		const user = await this.userService.suspendUser(id, reason);
+		res.json({
+			status: "success",
+			user
 		});
 	};
 }

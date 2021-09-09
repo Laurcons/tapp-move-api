@@ -14,3 +14,8 @@ export class PaginationQueryDTO {
 	@cv.IsOptional()
 	count?: string;
 }
+
+export class SuspendUserBodyDTO {
+	@cv.IsString()
+	reason!: string;
+}
