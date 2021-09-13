@@ -39,10 +39,11 @@ export default abstract class RideService extends CrudService<Ride> {
 				scooterId: scooter._id,
 				status: "ongoing",
 			});
-			if (!ride) {
-				// this means that there isn't any active ride with this scooter:
-				//  we preventively tell it to stop sending at interval (in case it is sending at interval)
+			if (data.isFromTracking) {
+				// we tell the scooter to stop sending at interval
 				await this.tcpService.endTrackPosition(lockId);
+			}
+			if (!ride) {
 				return;
 			}
 			const lastPoint = ride.route[ride.route.length - 1];

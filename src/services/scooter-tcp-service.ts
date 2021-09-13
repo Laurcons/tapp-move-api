@@ -35,6 +35,7 @@ export interface ScooterLockStatusEvent {
 
 export interface ScooterLocationEvent {
 	lockId: string;
+	isFromTracking: boolean;
 	location: [number, number];
 }
 
@@ -200,6 +201,7 @@ export abstract class ScooterTcpService {
 		// push to scooter
 		this.events.emit("scooterLocation", {
 			lockId: msg.lockId,
+			isFromTracking: msg.params[0] === "1",
 			location: coords,
 		});
 	}
