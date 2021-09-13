@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import RideService from "../../../services/ride-service";
 import ScooterService from "../../../services/scooter-service";
-import { PaginationQueryDTO, ScooterIdParamsDTO } from "./admin-scooters-dto";
+import { AddScooterBodyDTO, PaginationQueryDTO, ScooterIdParamsDTO } from "./admin-scooters-dto";
 import mongoose from "mongoose";
+import UserService from "../../../services/user-service";
 
 class AdminScootersController {
     private scooterService = ScooterService.instance;
     private rideService = RideService.instance;
+    private userService = UserService.instance;
 
     getAll = async (
         req: Request,
@@ -58,8 +60,8 @@ class AdminScootersController {
 						...ride,
 						route: undefined,
 						...(await this.rideService.calculateRideInfo(ride)),
-						scooter: await this.scooterService.findOne({
-							_id: ride.scooterId,
+						user: await this.userService.findOne({
+							_id: ride.userId,
 						}),
 					}))
 				)
@@ -69,6 +71,25 @@ class AdminScootersController {
             status: "success",
             rides,
             start, count, total
+        });
+    }
+
+    addNew = async (
+        req: Request<{}, {}, AddScooterBodyDTO>,
+        res: Response
+    ) => {
+        const fields = req.body;
+        const scooter = await this.scooterService.insert({
+            ...fields,
+            location: {
+                type: "Point",
+                coordinates: fields.location
+            },
+            status: "available"
+        });
+        res.json({
+            status: "success",
+            scooter
         });
     }
 

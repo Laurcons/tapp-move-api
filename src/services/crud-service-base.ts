@@ -1,5 +1,5 @@
 
-import mongoose from "mongoose";
+import mongoose, { LeanDocument } from "mongoose";
 import ApiError from "../api-error";
 
 abstract class CrudService<Doc extends mongoose.Document> {
@@ -16,7 +16,7 @@ abstract class CrudService<Doc extends mongoose.Document> {
 		this.model = model;
 	}
 
-	async insert(doc: Partial<Doc>) {
+	async insert(doc: Partial<LeanDocument<Doc>>) {
 		const newDoc = await this.model.create(doc);
 		return newDoc;
 	}
