@@ -330,6 +330,10 @@ export default abstract class RideService extends CrudService<Ride> {
 		);
 	}
 
+	async getAllSortedAndPaginated(start: number, count: number) {
+		return this.getSortedAndPaginatedRides({ $match: {} }, start, count);
+	}
+
 	async pay(rideId: string) {
 		const ride = this.model.findOneAndUpdate(
 			{ _id: mongoose.Types.ObjectId(rideId) },
