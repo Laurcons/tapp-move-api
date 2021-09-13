@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 import { PaginationQueryDTO } from "../users/admin-users-dto";
 import UserService from "../../../services/user-service";
 import ScooterService from "../../../services/scooter-service";
+import { RideIdParamsDTO } from "../../ride/ride-dto";
+import ApiError from "../../../api-error";
 
 class AdminRidesController {
     private rideService = RideService.instance;
@@ -10,7 +12,8 @@ class AdminRidesController {
     private scooterService = ScooterService.instance;
 
     getAll = async (
-        req: Request<{}, {}, {}, PaginationQueryDTO>, res: Response
+        req: Request<{}, {}, {}, PaginationQueryDTO>,
+        res: Response
     ) => {
         const start = parseInt(req.query.start ?? "0");
         const count = parseInt(req.query.count ?? "20");
@@ -29,6 +32,24 @@ class AdminRidesController {
             status: "success",
             start, count, total,
             rides,
+        });
+    }
+
+    getOne = async (
+        req: Request<Partial<RideIdParamsDTO>>,
+        res: Response
+    ) => {
+        const { id } = req.params as RideIdParamsDTO;
+        const ride = await this.rideService.findId(id);
+        if (!ride)
+            throw ApiError.rideNotFound;
+        const xride = {
+            ...ride.toJSON(),
+            ...this.rideService.calculateRideInfo(ride)
+        };
+        res.json({
+            status: "success",
+            ride: xride
         });
     }
 
