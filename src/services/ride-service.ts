@@ -39,7 +39,7 @@ export default abstract class RideService extends CrudService<Ride> {
 				scooterId: scooter._id,
 				status: "ongoing",
 			});
-			if (data.isFromTracking) {
+			if (!ride && data.isFromTracking) {
 				// we tell the scooter to stop sending at interval
 				await this.tcpService.endTrackPosition(lockId);
 			}
@@ -185,7 +185,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		}
 	}
 
-	async endRide(rideId: string, currentLocation: [number, number]) {
+	async endRide(rideId: string, currentCoords: [number, number]) {
 		const ride = await this.model.findOne({
 			_id: mongoose.Types.ObjectId(rideId),
 			status: "ongoing",
@@ -220,10 +220,13 @@ export default abstract class RideService extends CrudService<Ride> {
 				$set: {
 					endLocation: {
 						type: "Point",
-						coordinates: currentLocation,
+						coordinates: currentCoords,
 					},
 					status: "payment-pending",
 					endedAt: new Date(),
+				},
+				$push: {
+					route: currentCoords
 				},
 			},
 			{ new: true, useFindAndModify: false }

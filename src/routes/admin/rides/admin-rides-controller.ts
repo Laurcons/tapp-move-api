@@ -44,9 +44,11 @@ class AdminRidesController {
         if (!ride)
             throw ApiError.rideNotFound;
         const xride = {
-            ...ride.toJSON(),
-            ...this.rideService.calculateRideInfo(ride)
-        };
+			...ride.toJSON(),
+			...this.rideService.calculateRideInfo(ride),
+			user: await this.userService.findId(ride.userId),
+			scooter: await this.scooterService.findId(ride.scooterId),
+		};
         res.json({
             status: "success",
             ride: xride
