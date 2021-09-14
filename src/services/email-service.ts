@@ -1,4 +1,5 @@
 
+import { readFile } from "fs/promises";
 import nodemailer from "nodemailer";
 import Config from "../environment";
 
@@ -13,9 +14,12 @@ export default abstract class EmailService {
 
 	private async initializeSMTP() {
 		const transporter = nodemailer.createTransport({
-			host: "smtp-relay.gmail.com",
+			host: "smtp.gmail.com",
 			port: 587,
 			secure: false,
+			tls: {
+				ciphers: "SSLv3"
+			},
 			auth: {
 				user: Config.get("GMAIL_USER"),
 				pass: Config.get("GMAIL_PASSWORD"),
@@ -25,12 +29,27 @@ export default abstract class EmailService {
 		return transporter;
 	}
 
-	async sendForgotPasswordEmail() {
+	async sendForgotPasswordEmail(token: string) {
 		const transporter = await this.initializeSMTP();
+		const template = await readFile("./src/routes/pages/email/forgotPassword.html");
+		const keys: Record<string, string> = {
+			RESETLINK:
+				Config.get("API_URL") + 
+				"/pages/forgotPassword?token=" +
+				token
+		};
+		const body = ((content: string) => {
+			let result = content;
+			for (const key in keys) {
+				result = result.split('[[' + key + ']]').join(keys[key]);
+			}
+			return result;
+		})(template.toString());
 		await transporter.sendMail({
 			to: "Pricop Laurentiu <laurcons@outlook.com>",
 			from: "Tapp MOVE <tapp.move.noreply@gmail.com>",
-			html: "<h1>HELLO</h1>",
+			html: body,
+			subject: "Reset password request"
 		});
 
 		transporter.close();

@@ -55,7 +55,7 @@ export default abstract class AwsService {
 			Fields: {
 				"Content-Type": contentType,
 				success_action_redirect:
-					Config.get("API_URL") + `/uploads/confirm?payload=${jwt}`,
+					Config.get("API_URL") + `/api-v1/uploads/confirm?payload=${jwt}`,
 			}	
 		});
 		return presignedPost;

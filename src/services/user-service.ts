@@ -153,7 +153,7 @@ export default abstract class UserService extends CrudService<User> {
 		if (!user) return undefined;
 		const token = cryptoRandomString({ length: 100 });
 		// send email
-		// await this.emailService.sendForgotPasswordEmail();
+		await this.emailService.sendForgotPasswordEmail(token);
 		// user.forgotPasswordToken = token;
 		// await user.save();
 		await this.model.updateOne(

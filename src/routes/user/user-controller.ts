@@ -59,7 +59,6 @@ class UserController {
 		const token = await this.userService.beginForgotPassword(email);
 		res.json({
 			status: "success",
-			"token-that-should-have-been-sent-through-email": token
 		});
 	};
 
