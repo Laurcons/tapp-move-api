@@ -30,7 +30,7 @@ export default abstract class UserService extends CrudService<User> {
 	 */
 	private createSession = async (user: User) => {
 		// create jwt
-		const jwt = await JWTP.sign({}, Config.get("AUTH_SECRET"), {
+		const jwt = await JWTP.sign({}, Config.get("JWT_SECRET"), {
 			subject: user._id.toString(),
 		});
 		// create session

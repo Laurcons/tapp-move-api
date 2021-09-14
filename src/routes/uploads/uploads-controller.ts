@@ -39,7 +39,7 @@ class UploadsController {
         res: Response
     ) => {
         const { payload } = req.query as EndUploadQueryDTO;
-        const token = await JWTP.verify(payload, Config.get("AUTH_SECRET"));
+        const token = await JWTP.verify(payload, Config.get("JWT_SECRET"));
         const { sub, key, scope } = token as { sub: string; key: string; scope: string; };
         let result: any = {};
         switch (scope) {

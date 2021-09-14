@@ -31,7 +31,7 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
         //  a const, which it is only after the catch block
         let jwtTEMP;
         try {
-            jwtTEMP = await JWTP.verify(token, Config.get("AUTH_SECRET"));
+            jwtTEMP = await JWTP.verify(token, Config.get("JWT_SECRET"));
         } catch (err) {
             throw ApiError.invalidToken;
         }

@@ -55,7 +55,7 @@ export abstract class AdminAuthService extends CrudService<Admin> {
 		if (!(await this.verifyPassword(password, admin.password)))
 			throw ApiError.userNotFound;
 		// go ahead
-		const jwt = await JWTP.sign({}, Config.get("AUTH_SECRET"), {
+		const jwt = await JWTP.sign({}, Config.get("JWT_SECRET"), {
 			subject: admin._id.toString(),
 		});
 		// admin.lastLoginAt = new Date();
