@@ -125,7 +125,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		// 	throw ApiError.alreadyRiding;
 		// }
 		// retrieve scooter
-		const scooter = await this.scooterService.tryBookScooter(scooterCode);
+		const scooter = await this.scooterService.tryReserveScooter(scooterCode);
 		if (!scooter) {
 			throw ApiError.scooterUnavailable;
 		}
@@ -171,6 +171,11 @@ export default abstract class RideService extends CrudService<Ride> {
 			});
 			// increment ride counter on user
 			await this.userService.incrementRideCount(user);
+			// set booked status on scooter
+			await this.scooterService.updateOne(
+				{ _id: scooter._id },
+				{ status: "booked" }
+			);
 			return ride;
 		} catch (ex) {
 			// scooter.status = "available";
