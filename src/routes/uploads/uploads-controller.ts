@@ -1,12 +1,11 @@
-import UploadsService from "../../services/uploads-service";
-import { Request, Response } from "express";
-import { DriversLicenseUploadBodyDTO, EndUploadQueryDTO, UploadBodyDTO } from "./uploads-dto";
 import { plainToClass } from "class-transformer";
 import { validate } from "class-validator";
-import { JWTP } from "../../jwt-promise";
+import { Request, Response } from "express";
 import Config from "../../environment";
+import { JWTP } from "../../jwt-promise";
+import UploadsService from "../../services/uploads-service";
 import UserService from "../../services/user-service";
-import mongoose from "mongoose";
+import { DriversLicenseUploadBodyDTO, EndUploadQueryDTO, UploadBodyDTO } from "./uploads-dto";
 
 class UploadsController {
     private uploadsService = UploadsService.instance;

@@ -1,11 +1,10 @@
-import { GetRidesQueryDTO, LocationQueryDTO, PatchBodyDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
-import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
-import { Ride } from "./ride-model";
-import { ValidationError } from "class-validator";
 import ApiError from "../../api-error";
-import { PaginationQueryDTO } from "../../common-dtos/pagination-query-dto";
 import { IdParamsDTO } from "../../common-dtos/id-params-dto";
+import { PaginationQueryDTO } from "../../common-dtos/pagination-query-dto";
+import RideService from "../../services/ride-service";
+import { GetRidesQueryDTO, LocationQueryDTO, PatchBodyDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
+import { Ride } from "./ride-model";
 
 class RideController {
 	rideService = RideService.instance;

@@ -1,10 +1,10 @@
-import RideService from "../../../services/ride-service";
 import { Request, Response } from "express";
-import UserService from "../../../services/user-service";
-import ScooterService from "../../../services/scooter-service";
 import ApiError from "../../../api-error";
 import { IdParamsDTO } from "../../../common-dtos/id-params-dto";
 import { PaginationQueryDTO } from "../../../common-dtos/pagination-query-dto";
+import RideService from "../../../services/ride-service";
+import ScooterService from "../../../services/scooter-service";
+import UserService from "../../../services/user-service";
 
 class AdminRidesController {
     private rideService = RideService.instance;

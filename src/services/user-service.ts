@@ -1,14 +1,14 @@
-import { JWTP } from "./../jwt-promise";
-import { User, UserModel } from "../routes/user/user-model";
-import CrudService from "./crud-service-base";
 import bcrypt from "bcrypt";
-import SessionService from "./session-service";
-import Config from "../environment";
-import ApiError from "../api-error";
 import cryptoRandomString from "crypto-random-string";
-import EmailService from "./email-service";
-import AwsService from "./aws-service";
 import mongoose from "mongoose";
+import ApiError from "../api-error";
+import Config from "../environment";
+import { User, UserModel } from "../routes/user/user-model";
+import { JWTP } from "./../jwt-promise";
+import AwsService from "./aws-service";
+import CrudService from "./crud-service-base";
+import EmailService from "./email-service";
+import SessionService from "./session-service";
 
 export default abstract class UserService extends CrudService<User> {
 	sessionService = SessionService.instance;

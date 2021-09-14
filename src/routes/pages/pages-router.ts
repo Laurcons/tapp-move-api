@@ -1,9 +1,9 @@
 
 import express from "express";
-import { asyncWrap } from "../../async-wrap";
-import PagesController from "./pages-controller";
 import basicAuth from "express-basic-auth";
+import { asyncWrap } from "../../async-wrap";
 import Config from "../../environment";
+import PagesController from "./pages-controller";
 
 const viewsRouter = express.Router();
 

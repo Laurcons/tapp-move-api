@@ -1,12 +1,12 @@
 import express from "express";
 import ApiError from "../../api-error";
-import { Scooter } from "./scooter-model";
 import ScooterService from "../../services/scooter-service";
 import {
 	FindNearQueryDTO,
 	PingBodyDTO,
-	ScooterCodeParamsDTO,
+	ScooterCodeParamsDTO
 } from "./scooter-dto";
+import { Scooter } from "./scooter-model";
 
 class ScooterController {
 	scooterService = ScooterService.instance;

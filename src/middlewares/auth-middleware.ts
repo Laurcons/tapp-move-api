@@ -1,12 +1,12 @@
-import { JWTP } from './../jwt-promise';
-
-import { Request, Response, NextFunction } from "express";
-import SessionService from "../services/session-service";
+import { NextFunction, Request, Response } from "express";
 import ApiError from '../api-error';
 import { asyncWrap } from '../async-wrap';
 import Config from '../environment';
 import { Logger } from '../logger';
 import { AdminAuthService } from '../services/admin-auth-service';
+import SessionService from "../services/session-service";
+import { JWTP } from './../jwt-promise';
+
 
 let _logger: Logger | null = null;
 

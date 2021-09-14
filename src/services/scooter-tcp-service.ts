@@ -1,14 +1,11 @@
-import Config from "../environment";
-import net, { createConnection } from "net";
-import { Logger } from "../logger";
-import { Queue } from "queue-typescript";
-import { TypedEvent } from "../typed-event";
-import {
-	DecimalDegreesLocation,
-	decimalMinutesToDecimalDegrees,
-} from "../coord-convert";
-import { EventEmitter } from "stream";
+import net from "net";
 import { TypedEmitter } from "tiny-typed-emitter";
+import {
+    DecimalDegreesLocation,
+    decimalMinutesToDecimalDegrees
+} from "../coord-convert";
+import Config from "../environment";
+import { Logger } from "../logger";
 
 /** Currently 10 seconds */
 const RESPONSE_TIMEOUT = 10 * 1000;

@@ -1,11 +1,10 @@
-import { IncomingMessage } from "http";
+import http, { IncomingMessage } from "http";
 import { Server } from "socket.io";
 import ApiError from "../api-error";
 import Config from "../environment";
 import { JWTP } from "../jwt-promise";
-import { AdminAuthService } from "./admin-auth-service";
-import http from "http";
 import { Logger } from "../logger";
+import { AdminAuthService } from "./admin-auth-service";
 
 enum WebsocketEvents {
 	"subscribe",

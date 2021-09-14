@@ -1,12 +1,12 @@
-import UserService from "../../../services/user-service";
 import { Request, Response } from "express";
-import RideService from "../../../services/ride-service";
-import AwsService from "../../../services/aws-service";
-import { SuspendUserBodyDTO } from "./admin-users-dto";
 import ApiError from "../../../api-error";
-import ScooterService from "../../../services/scooter-service";
 import { IdParamsDTO } from "../../../common-dtos/id-params-dto";
 import { PaginationQueryDTO } from "../../../common-dtos/pagination-query-dto";
+import AwsService from "../../../services/aws-service";
+import RideService from "../../../services/ride-service";
+import ScooterService from "../../../services/scooter-service";
+import UserService from "../../../services/user-service";
+import { SuspendUserBodyDTO } from "./admin-users-dto";
 
 class AdminUserController {
 	private userService = UserService.instance;

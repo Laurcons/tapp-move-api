@@ -1,10 +1,10 @@
-import { UpdateBodyDTO, ResetPasswordBodyDTO, ForgotPasswordBodyDTO } from './user-dto';
 import express from "express";
+import multer from 'multer';
 import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
-import UserController from "./user-controller";
 import validate from "../../middlewares/validate-middleware";
-import multer from 'multer';
+import UserController from "./user-controller";
+import { ForgotPasswordBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from './user-dto';
 
 const userRouter = express.Router();
 

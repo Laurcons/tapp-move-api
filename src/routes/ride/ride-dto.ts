@@ -1,5 +1,4 @@
 import * as cv from "class-validator";
-import { IsObjectIdString } from "../../dto-constraints/is-object-id-string";
 import { RideStatus, RideStatuses } from "./ride-model";
 
 export class GetRidesQueryDTO {

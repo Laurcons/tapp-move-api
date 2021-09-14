@@ -1,11 +1,11 @@
 import express from "express";
 import { asyncWrap } from "../../async-wrap";
-import RideController from "./ride-controller";
-import authenticate from "../../middlewares/auth-middleware";
-import { LocationQueryDTO, StartRideBodyDTO, StartRideQueryDTO, PatchBodyDTO, GetRidesQueryDTO } from "./ride-dto";
-import validate from "../../middlewares/validate-middleware";
-import { PaginationQueryDTO } from "../../common-dtos/pagination-query-dto";
 import { IdParamsDTO } from "../../common-dtos/id-params-dto";
+import { PaginationQueryDTO } from "../../common-dtos/pagination-query-dto";
+import authenticate from "../../middlewares/auth-middleware";
+import validate from "../../middlewares/validate-middleware";
+import RideController from "./ride-controller";
+import { GetRidesQueryDTO, LocationQueryDTO, PatchBodyDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 
 const rideRouter = express.Router();
 

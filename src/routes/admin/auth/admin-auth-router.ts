@@ -1,9 +1,9 @@
 import express from "express";
 import { asyncWrap } from "../../../async-wrap";
-import { LoginBodyDTO } from "./admin-auth-dto";
-import AdminAuthController from "./admin-auth-controller";
-import validate from "../../../middlewares/validate-middleware";
 import authenticate from "../../../middlewares/auth-middleware";
+import validate from "../../../middlewares/validate-middleware";
+import AdminAuthController from "./admin-auth-controller";
+import { LoginBodyDTO } from "./admin-auth-dto";
 
 const authRouter = express.Router();
 

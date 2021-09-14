@@ -1,5 +1,5 @@
 import * as cv from "class-validator";
-import { IsArray, IsNumber, Length } from "class-validator";
+import { IsArray, IsNumber } from "class-validator";
 
 export class FindNearQueryDTO {
     @cv.Matches(/^[0-9.]+\,[0-9.]+$/)

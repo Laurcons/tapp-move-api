@@ -2,9 +2,9 @@
 import express from "express";
 import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
+import validate from "../../middlewares/validate-middleware";
 import ScooterController from "./scooter-controller";
 import { FindNearQueryDTO, PingBodyDTO, ScooterCodeParamsDTO } from "./scooter-dto";
-import validate from "../../middlewares/validate-middleware";
 
 const scooterRouter = express.Router();
 

@@ -1,9 +1,9 @@
-import { UploadBodyDTO, EndUploadQueryDTO } from './uploads-dto';
 import express from "express";
+import { asyncWrap } from '../../async-wrap';
 import authenticate from "../../middlewares/auth-middleware";
 import validate from "../../middlewares/validate-middleware";
 import UploadsController from "./uploads-controller";
-import { asyncWrap } from '../../async-wrap';
+import { EndUploadQueryDTO, UploadBodyDTO } from './uploads-dto';
 
 const uploadsRouter = express.Router();
 

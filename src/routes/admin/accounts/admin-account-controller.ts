@@ -1,5 +1,5 @@
-import AdminAccountService from "../../../services/admin-account-service";
 import { Request, Response } from "express";
+import AdminAccountService from "../../../services/admin-account-service";
 
 class AdminAccountController {
     private accountService = AdminAccountService.instance;

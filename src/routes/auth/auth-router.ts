@@ -4,9 +4,9 @@ import authenticate from "../../middlewares/auth-middleware";
 import validate from "../../middlewares/validate-middleware";
 import AuthController from "./auth-controller";
 import {
-	BeginForgotPasswordBodyDTO,
-	LoginBodyDTO,
-	RegisterBodyDTO,
+    BeginForgotPasswordBodyDTO,
+    LoginBodyDTO,
+    RegisterBodyDTO
 } from "./auth-dto";
 
 const authRouter = express.Router();

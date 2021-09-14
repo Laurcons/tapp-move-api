@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import RideService from "../../../services/ride-service";
-import ScooterService from "../../../services/scooter-service";
-import { AddScooterBodyDTO } from "./admin-scooters-dto";
 import mongoose from "mongoose";
-import UserService from "../../../services/user-service";
 import { IdParamsDTO } from "../../../common-dtos/id-params-dto";
 import { PaginationQueryDTO } from "../../../common-dtos/pagination-query-dto";
+import RideService from "../../../services/ride-service";
+import ScooterService from "../../../services/scooter-service";
+import UserService from "../../../services/user-service";
+import { AddScooterBodyDTO } from "./admin-scooters-dto";
 
 class AdminScootersController {
     private scooterService = ScooterService.instance;

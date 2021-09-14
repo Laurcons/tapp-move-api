@@ -1,4 +1,3 @@
-import { ScooterModel } from './../scooter/scooter-model';
 import mongoose from 'mongoose';
 
 export type RideStatus = "ongoing" | "payment-pending" | "completed";

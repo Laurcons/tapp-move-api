@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express"
 import { ValidationError } from "class-validator";
+import { NextFunction, Request, Response } from "express";
 import ApiError from "../api-error";
 import { Logger } from "../logger";
 

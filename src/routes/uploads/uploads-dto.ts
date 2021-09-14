@@ -1,6 +1,6 @@
-import { UploadParams } from './../../services/uploads-service';
 import * as cv from "class-validator";
 import { UploadScopes } from "../../services/uploads-service";
+import { UploadParams } from './../../services/uploads-service';
 
 export class UploadBodyDTO {
     @cv.IsIn(UploadScopes)

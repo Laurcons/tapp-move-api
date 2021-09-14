@@ -1,9 +1,9 @@
+import { getDistance } from "geolib";
+import mongoose from "mongoose";
+import ApiError from "../api-error";
 import { Scooter, ScooterModel } from "../routes/scooter/scooter-model";
 import CrudService from "./crud-service-base";
-import { getDistance } from "geolib";
-import ApiError from "../api-error";
 import { ScooterTcpService } from "./scooter-tcp-service";
-import mongoose from "mongoose";
 
 export default abstract class ScooterService extends CrudService<Scooter> {
 	private tcpService = ScooterTcpService.instance;
