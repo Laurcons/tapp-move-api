@@ -32,14 +32,24 @@ const httpServer = http.createServer(app);
 //  it is only supplied by Heroku
 const PORT = process.env.PORT ?? 8000;
 
+const logger = new Logger({ prefix: "init" });
+
 // configure pages
 app.engine("mst", mustacheExpress());
 app.set("view engine", "mst");
 app.set("views", "./src/routes/pages/views");
 app.use("/pages", viewsRouter);
-if (process.env.NODE_ENV !== "production") app.disable("view cache");
 
-app.use(throttle(3000));
+if (process.env.NODE_ENV !== "production") {
+	app.disable("view cache");
+	if (process.env.THROTTLING_MS) {
+		logger.log(
+			`Throttling is enabled! Every request will be delayed by ${process.env.THROTTLING_MS} ms`.yellow
+		);
+		app.use(throttle(parseInt(process.env.THROTTLING_MS)));
+	}
+}
+
 app.use(cors({
 	credentials: true
 }));
@@ -50,8 +60,6 @@ app.use("/api-v1", appRouter);
 
 app.use(handleNotFound());
 app.use(handleErrors(new Logger({ prefix: "exception" })));
-
-const logger = new Logger({ prefix: "init" });
 
 (async function () {
 
