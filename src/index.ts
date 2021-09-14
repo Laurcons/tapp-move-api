@@ -23,6 +23,7 @@ import SessionService from "./services/session-service";
 import UserService from "./services/user-service";
 import { WebsocketService } from "./services/websocket-service";
 import http from "http";
+import throttle from "./middlewares/throttle-middleware";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -38,6 +39,7 @@ app.set("views", "./src/routes/pages/views");
 app.use("/pages", viewsRouter);
 if (process.env.NODE_ENV !== "production") app.disable("view cache");
 
+app.use(throttle(3000));
 app.use(cors({
 	credentials: true
 }));
