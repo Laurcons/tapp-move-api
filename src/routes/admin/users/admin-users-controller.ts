@@ -2,9 +2,11 @@ import UserService from "../../../services/user-service";
 import { Request, Response } from "express";
 import RideService from "../../../services/ride-service";
 import AwsService from "../../../services/aws-service";
-import { PaginationQueryDTO, SuspendUserBodyDTO, UserIdParamsDTO } from "./admin-users-dto";
+import { SuspendUserBodyDTO } from "./admin-users-dto";
 import ApiError from "../../../api-error";
 import ScooterService from "../../../services/scooter-service";
+import { IdParamsDTO } from "../../../common-dtos/id-params-dto";
+import { PaginationQueryDTO } from "../../../common-dtos/pagination-query-dto";
 
 class AdminUserController {
 	private userService = UserService.instance;
@@ -35,8 +37,8 @@ class AdminUserController {
 		});
 	};
 
-	getOne = async (req: Request<Partial<UserIdParamsDTO>>, res: Response) => {
-		const { id } = req.params as UserIdParamsDTO;
+	getOne = async (req: Request<Partial<IdParamsDTO>>, res: Response) => {
+		const { id } = req.params as IdParamsDTO;
 		const user = await this.userService.findId(id);
 		if (!user) throw ApiError.userNotFound;
 		const driversLicense = user.driversLicenseKey
@@ -52,10 +54,10 @@ class AdminUserController {
 	};
 
 	getRidesForUser = async (
-		req: Request<Partial<UserIdParamsDTO>, {}, {}, PaginationQueryDTO>,
+		req: Request<Partial<IdParamsDTO>, {}, {}, PaginationQueryDTO>,
 		res: Response
 	) => {
-		const { id } = req.params as UserIdParamsDTO;
+		const { id } = req.params as IdParamsDTO;
 		const start = parseInt(req.query.start ?? "0");
 		const count = parseInt(req.query.count ?? "5");
 		const user = await this.userService.findId(id);
@@ -86,9 +88,9 @@ class AdminUserController {
 		});
 	};
 
-	suspend = async (req: Request<Partial<UserIdParamsDTO>, {}, SuspendUserBodyDTO>, res: Response) => {
+	suspend = async (req: Request<Partial<IdParamsDTO>, {}, SuspendUserBodyDTO>, res: Response) => {
 		const { reason } = req.body;
-		const { id } = req.params as UserIdParamsDTO;
+		const { id } = req.params as IdParamsDTO;
 		const user = await this.userService.suspendUser(id, reason);
 		res.json({
 			status: "success",

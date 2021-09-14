@@ -1,9 +1,11 @@
-import { GetRidesQueryDTO, LocationQueryDTO, PaginationQueryDTO, PatchBodyDTO, RideIdParamsDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
+import { GetRidesQueryDTO, LocationQueryDTO, PatchBodyDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 import RideService from "../../services/ride-service";
 import { Request, Response } from "express";
 import { Ride } from "./ride-model";
 import { ValidationError } from "class-validator";
 import ApiError from "../../api-error";
+import { PaginationQueryDTO } from "../../common-dtos/pagination-query-dto";
+import { IdParamsDTO } from "../../common-dtos/id-params-dto";
 
 class RideController {
 	rideService = RideService.instance;
@@ -30,7 +32,7 @@ class RideController {
 	};
 
 	getRide = async (
-		req: Request<Partial<RideIdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
+		req: Request<Partial<IdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
 		res: Response<{
 			status: string;
 			linearDistance: number;
@@ -40,7 +42,7 @@ class RideController {
 		}>
 	) => {
 		const { location } = req.query as LocationQueryDTO;
-		const { id } = req.params as RideIdParamsDTO;
+		const { id } = req.params as IdParamsDTO;
 		const coords = location.split(",").map(parseFloat) as [number, number];
 		const result = await this.rideService.getRide(id, coords);
 		res.json({
@@ -52,7 +54,7 @@ class RideController {
 	};
 
 	endRide = async (
-		req: Request<Partial<RideIdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
+		req: Request<Partial<IdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
 		res: Response<{
 			status: string;
 			linearDistance: number;
@@ -64,7 +66,7 @@ class RideController {
 		}>
 	) => {
 		const { location } = req.query as LocationQueryDTO;
-		const { id } = req.params as RideIdParamsDTO;
+		const { id } = req.params as IdParamsDTO;
 		const coords = location.split(",").map(parseFloat) as [number, number];
 		const result = await this.rideService.endRide(id, coords);
 		res.json({
@@ -77,10 +79,10 @@ class RideController {
 	};
 
 	patch = async (
-		req: Request<Partial<RideIdParamsDTO>, {}, PatchBodyDTO>,
+		req: Request<Partial<IdParamsDTO>, {}, PatchBodyDTO>,
 		res: Response<{ status: string }>
 	) => {
-		await this.rideService.updateRide((req.params as RideIdParamsDTO).id, req.body);
+		await this.rideService.updateRide((req.params as IdParamsDTO).id, req.body);
 		res.json({
 			status: "success",
 		});
@@ -101,10 +103,10 @@ class RideController {
 	};
 
 	pay = async (
-		req: Request<Partial<RideIdParamsDTO>>,
+		req: Request<Partial<IdParamsDTO>>,
 		res: Response<{ status: string; ride: Ride }>
 	) => {
-		const { id } = req.params as RideIdParamsDTO;
+		const { id } = req.params as IdParamsDTO;
 		const ride = await this.rideService.pay(id);
 		if (!ride)
 			throw ApiError.rideNotFound;

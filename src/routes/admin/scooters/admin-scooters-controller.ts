@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import RideService from "../../../services/ride-service";
 import ScooterService from "../../../services/scooter-service";
-import { AddScooterBodyDTO, PaginationQueryDTO, ScooterIdParamsDTO } from "./admin-scooters-dto";
+import { AddScooterBodyDTO } from "./admin-scooters-dto";
 import mongoose from "mongoose";
 import UserService from "../../../services/user-service";
+import { IdParamsDTO } from "../../../common-dtos/id-params-dto";
+import { PaginationQueryDTO } from "../../../common-dtos/pagination-query-dto";
 
 class AdminScootersController {
     private scooterService = ScooterService.instance;
@@ -22,10 +24,10 @@ class AdminScootersController {
     }
 
     getOne = async (
-        req: Request<Partial<ScooterIdParamsDTO>>,
+        req: Request<Partial<IdParamsDTO>>,
         res: Response
     ) => {
-        const { id } = req.params as ScooterIdParamsDTO;
+        const { id } = req.params as IdParamsDTO;
         const scooter = await this.scooterService.findId(id);
         res.json({
             status: "success",
@@ -34,10 +36,10 @@ class AdminScootersController {
     }
 
     toggleDisabled = async (
-        req: Request<Partial<ScooterIdParamsDTO>>,
+        req: Request<Partial<IdParamsDTO>>,
         res: Response
     ) => {
-        const { id } = req.params as ScooterIdParamsDTO;
+        const { id } = req.params as IdParamsDTO;
         const scooter = await this.scooterService.toggleDisabledStatus(id);
         res.json({
             status: "success",
@@ -46,10 +48,10 @@ class AdminScootersController {
     }
 
     getRides = async (
-        req: Request<Partial<ScooterIdParamsDTO>, {}, {}, PaginationQueryDTO>,
+        req: Request<Partial<IdParamsDTO>, {}, {}, PaginationQueryDTO>,
         res: Response
     ) => {
-        const { id } = req.params as ScooterIdParamsDTO;
+        const { id } = req.params as IdParamsDTO;
         const start = parseInt(req.query.start ?? "0");
         const count = parseInt(req.query.count ?? "20");
         const rides = await this.rideService

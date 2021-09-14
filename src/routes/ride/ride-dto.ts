@@ -8,11 +8,6 @@ export class GetRidesQueryDTO {
     status?: RideStatus;
 }
 
-export class RideIdParamsDTO {
-    @IsObjectIdString()
-    id!: string;
-}
-
 export class StartRideBodyDTO {
     @cv.IsString()
     @cv.Length(4)
@@ -48,17 +43,4 @@ export class PatchBodyDTO {
 	@cv.IsBoolean()
 	@cv.IsOptional()
 	taillights?: boolean;
-}
-
-export class PaginationQueryDTO {
-    @cv.IsNumberString()
-    @cv.IsPositive()
-    @cv.IsOptional()
-    start?: string;
-
-    @cv.IsNumberString()
-    @cv.IsPositive()
-    @cv.Max(20)
-    @cv.IsOptional()
-    count?: string;
 }

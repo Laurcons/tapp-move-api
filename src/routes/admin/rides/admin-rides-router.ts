@@ -1,9 +1,9 @@
 import express from "express";
 import { asyncWrap } from "../../../async-wrap";
+import { IdParamsDTO } from "../../../common-dtos/id-params-dto";
+import { PaginationQueryDTO } from "../../../common-dtos/pagination-query-dto";
 import authenticate from "../../../middlewares/auth-middleware";
 import validate from "../../../middlewares/validate-middleware";
-import { RideIdParamsDTO } from "../../ride/ride-dto";
-import { PaginationQueryDTO } from "../users/admin-users-dto";
 import AdminRidesController from "./admin-rides-controller";
 
 const ridesRouter = express.Router();
@@ -17,7 +17,7 @@ ridesRouter.get(
 ridesRouter.get(
     "/:id",
     authenticate("admin"),
-    validate({ params: RideIdParamsDTO }),
+    validate({ params: IdParamsDTO }),
     asyncWrap(AdminRidesController.getOne)
 );
 

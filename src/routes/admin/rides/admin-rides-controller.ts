@@ -1,10 +1,10 @@
 import RideService from "../../../services/ride-service";
 import { Request, Response } from "express";
-import { PaginationQueryDTO } from "../users/admin-users-dto";
 import UserService from "../../../services/user-service";
 import ScooterService from "../../../services/scooter-service";
-import { RideIdParamsDTO } from "../../ride/ride-dto";
 import ApiError from "../../../api-error";
+import { IdParamsDTO } from "../../../common-dtos/id-params-dto";
+import { PaginationQueryDTO } from "../../../common-dtos/pagination-query-dto";
 
 class AdminRidesController {
     private rideService = RideService.instance;
@@ -36,10 +36,10 @@ class AdminRidesController {
     }
 
     getOne = async (
-        req: Request<Partial<RideIdParamsDTO>>,
+        req: Request<Partial<IdParamsDTO>>,
         res: Response
     ) => {
-        const { id } = req.params as RideIdParamsDTO;
+        const { id } = req.params as IdParamsDTO;
         const ride = await this.rideService.findId(id);
         if (!ride)
             throw ApiError.rideNotFound;

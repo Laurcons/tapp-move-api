@@ -1,20 +1,4 @@
 import * as cv from "class-validator";
-import { IsObjectIdString } from "../../../dto-constraints/is-object-id-string";
-
-export class ScooterIdParamsDTO {
-    @IsObjectIdString()
-    id!: string;
-}
-
-export class PaginationQueryDTO {
-    @cv.IsNumberString()
-    @cv.IsOptional()
-    start?: string;
-
-    @cv.IsNumberString()
-    @cv.IsOptional()
-    count?: string;
-}
 
 export class AddScooterBodyDTO {
 	@cv.Matches(/^[A-Z0-9]{4}$/)
