@@ -359,8 +359,14 @@ export default abstract class RideService extends CrudService<Ride> {
 
 	async pay(rideId: string) {
 		const ride = await this.model.findOneAndUpdate({
-			_id: rideId,
-			status: "payment-pending",
+			// $expr: {
+			// 	$and: [
+					// { $eq: [ "$_id", rideId] },
+					_id: rideId,
+					// { $or: [ { $eq: ["payment-pending", "$status"]}, { $eq: ["payment-initiated", "$status"] } ] }
+					status: /(payment-pending)|(payment-initiated)/
+			// 	]
+			// }
 		}, {
 			status: "payment-initiated"
 		});
