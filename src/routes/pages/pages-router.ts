@@ -8,9 +8,14 @@ import PagesController from "./pages-controller";
 const viewsRouter = express.Router();
 
 viewsRouter.get(
-    "/forgotPassword",
-    asyncWrap(PagesController.getForgotPassword)
+	"/forgotPassword",
+	asyncWrap(PagesController.getForgotPassword)
 );
+viewsRouter.get(
+	"/paymentResult",
+	asyncWrap(PagesController.paymentResult)
+);
+
 const username = Config.get("SCOOTER_PANEL_USER");
 const password = Config.get("SCOOTER_PANEL_PASS");
 viewsRouter.get(

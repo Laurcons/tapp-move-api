@@ -2,12 +2,14 @@ import { Request, Response } from "express";
 import ApiError from "../../api-error";
 import { IdParamsDTO } from "../../common-dtos/id-params-dto";
 import { PaginationQueryDTO } from "../../common-dtos/pagination-query-dto";
+import PaymentsService from "../../services/payments-service";
 import RideService from "../../services/ride-service";
 import { GetRidesQueryDTO, LocationQueryDTO, PatchBodyDTO, StartRideBodyDTO, StartRideQueryDTO } from "./ride-dto";
 import { Ride } from "./ride-model";
 
 class RideController {
-	rideService = RideService.instance;
+	private rideService = RideService.instance;
+	private paymentsService = PaymentsService.instance;
 
 	startRide = async (
 		req: Request<{}, {}, StartRideBodyDTO, StartRideQueryDTO>,
@@ -103,15 +105,21 @@ class RideController {
 
 	pay = async (
 		req: Request<Partial<IdParamsDTO>>,
-		res: Response<{ status: string; ride: Ride }>
+		res: Response<{ status: string; url: string; }>
 	) => {
 		const { id } = req.params as IdParamsDTO;
-		const ride = await this.rideService.pay(id);
-		if (!ride)
-			throw ApiError.rideNotFound;
+		// const ride = await this.rideService.pay(id);
+		const ride = await this.rideService.findOne(
+			{ _id: id, status: "payment-pending" }
+		);
+		if (!ride) throw ApiError.rideNotFound;
+		const calculated = this.rideService.calculateRideInfo(ride);
+		const session = await this.paymentsService.createCheckoutForRide(ride, calculated.price);
+		if (!session.url)
+			throw new Error();
 		res.json({
 			status: "success",
-			ride
+			url: session.url,
 		});
 	}
 

@@ -36,6 +36,24 @@ class PagesController {
 	getScooterPanel = async (req: Request, res: Response) => {
         res.render("scooterPanel");
     };
+
+	paymentResult = async (req: Request, res: Response) => {
+		const query = Object.keys(req.query);
+		let additional: Record<string, any> = {};
+		if (req.query.token) {
+			const data = JSON.parse(Buffer.from(decodeURIComponent(req.query.token as string), 'base64').toString());
+			additional.payment = {
+				for: data.for,
+				amount: parseFloat(data.amount) / 100,
+				currency: data.currency,
+			};
+		}
+		res.render("paymentResult", {
+			success: query.includes('success'),
+			cancel: query.includes('cancel'),
+			...additional
+		});
+	};
 }
 
 export default new PagesController();

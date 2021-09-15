@@ -36,6 +36,7 @@
     "queue-typescript": "^1.0.1",
     "socket.io": "^4.2.0",
     "source-map-support": "^0.5.19",
+    "stripe": "^8.174.0",
     "tiny-typed-emitter": "^2.1.0"
   },
   "devDependencies": {

@@ -85,7 +85,7 @@ export default abstract class RideService extends CrudService<Ride> {
 				: DateTime.fromJSDate(ride.startedAt)
 						.diffNow()
 						.as("milliseconds"));
-		const price = Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute
+		const price = 200 + Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute + 2 lei flatrate
 		return {
 			linearDistance,
 			pathDistance,

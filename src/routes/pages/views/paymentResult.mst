@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment to Tapp MOVE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">    <title>Reset password - Move</title>
+</head>
+<body>
+    <div class="container py-3">
+        {{# success }}
+            <h1>Thanks for riding with us!</h1>
+            <div class="alert alert-success">
+                Payment completed. You may now return to the app.
+            </div>
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div class="card-title">Payment information</div>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Paid for {{ payment.for }}</li>
+                    <li class="list-group-item">Amount: {{ payment.amount }} {{ payment.currency }}</li>
+                </ul>
+            </div>
+        {{/ success }}
+        {{# cancel }}
+            <h1>Did anything happen?</h1>
+            <div class="alert alert-danger">
+                Payment did not complete. Please note that you'll have to pay before starting a new ride.
+            </div>
+            You may now return to the app.
+        {{/ cancel }}
+    </div>
+</body>
+</html>
