@@ -16,7 +16,7 @@ export interface Ride extends mongoose.Document {
 	};
 	startedAt: Date;
 	endedAt?: Date;
-	checkoutRecoveryUrl?: string;
+	checkoutId?: string;
 	scooterId: mongoose.Types.ObjectId;
 	userId: mongoose.Types.ObjectId;
 }
@@ -43,7 +43,7 @@ export const rideSchema = new mongoose.Schema({
         type: Date,
         required: false
     },
-    checkoutRecoveryUrl: {
+    checkoutId: {
         type: String,
         required: false
     },
