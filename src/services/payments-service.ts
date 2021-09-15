@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import Config from "../environment";
 import { Ride } from "../routes/ride/ride-model";
 
-const stripe = new Stripe("sk_test_51JZbgiGBgim4kBUHM6cPP8xewKk8sFQUVqkQwZTAbWdLWfpQvXwjsXO3jzA15NODNcYXc3swNVSkt1qFSnu67a4J00n6Nqlox5", {
+const stripe = new Stripe(Config.get("STRIPE_SECRET"), {
     apiVersion: '2020-08-27'
 });
 
