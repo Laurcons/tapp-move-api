@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-export type RideStatus = "ongoing" | "payment-pending" | "completed";
-export const RideStatuses = ["ongoing", "payment-pending", "completed"];
+export type RideStatus = "ongoing" | "payment-pending" | "payment-initiated" | "completed";
+export const RideStatuses = ["ongoing", "payment-pending", "payment-initiated", "completed"];
 
 export interface Ride extends mongoose.Document {
     status: RideStatus;
