@@ -51,7 +51,10 @@ class PagesController {
 		const data = await JWTP.verify(req.query.token as string, Config.get("JWT_SECRET"));
 		await this.rideService.updateOne(
 			{ _id: data.rideId },
-			{ $set: { status: data.status === 'success' ? "completed" : "payment-pending" } }
+			{
+				$set: { status: data.status === 'success' ? "completed" : "payment-pending" },
+				$unset: { checkoutId: 1 }
+			}
 		);
 		additional.payment = {
 			for: data.for,

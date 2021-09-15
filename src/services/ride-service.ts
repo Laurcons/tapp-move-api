@@ -359,14 +359,8 @@ export default abstract class RideService extends CrudService<Ride> {
 
 	async pay(rideId: string) {
 		const ride = await this.model.findOneAndUpdate({
-			// $expr: {
-			// 	$and: [
-					// { $eq: [ "$_id", rideId] },
-					_id: rideId,
-					// { $or: [ { $eq: ["payment-pending", "$status"]}, { $eq: ["payment-initiated", "$status"] } ] }
-					status: /(payment-pending)|(payment-initiated)/
-			// 	]
-			// }
+			_id: rideId,
+			status: /(payment-pending)|(payment-initiated)/
 		}, {
 			status: "payment-initiated"
 		});
@@ -376,8 +370,11 @@ export default abstract class RideService extends CrudService<Ride> {
 			ride,
 			calculated.price
 		);
-        if (!session.url) throw new Error();
-		return session.url;
+		await this.model.updateOne(
+			{ _id: rideId },
+			{ $set: { checkoutId: session.id } }
+		);
+		return session.url as string;
 	}
 }
 class RideServiceInstance extends RideService {}

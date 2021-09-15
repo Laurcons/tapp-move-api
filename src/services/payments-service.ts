@@ -34,18 +34,26 @@ export default abstract class PaymentsService {
             status: "cancelled"
         }, Config.get("JWT_SECRET"));
 
-        const session = await stripe.checkout.sessions.create({
-            line_items: [{
-                name: "Scooter ride",
-                currency: "ron",
-                amount: price,
-                quantity: 1
-            }],
-            payment_method_types: [ 'card' ],
-            mode: 'payment',
-            success_url: `${Config.get("API_URL")}/pages/completePayment?token=${successToken}`,
-            cancel_url: `${Config.get("API_URL")}/pages/completePayment?token=${cancelToken}`
-        });
+        const session = await (async () => {
+            if (ride.checkoutId) {
+                try {
+                    const sess = await stripe.checkout.sessions.retrieve(ride.checkoutId);
+                    return sess;
+                } catch (_) {}
+            }
+            return stripe.checkout.sessions.create({
+                line_items: [{
+                    name: "Scooter ride",
+                    currency: "ron",
+                    amount: price,
+                    quantity: 1
+                }],
+                payment_method_types: [ 'card' ],
+                mode: 'payment',
+                success_url: `${Config.get("API_URL")}/pages/completePayment?token=${successToken}`,
+                cancel_url: `${Config.get("API_URL")}/pages/completePayment?token=${cancelToken}`
+            });
+        })();
         return session;
     }
 
