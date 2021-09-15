@@ -38,6 +38,8 @@ export default abstract class PaymentsService {
             if (ride.checkoutId) {
                 try {
                     const sess = await stripe.checkout.sessions.retrieve(ride.checkoutId);
+                    if (!sess || !sess.url)
+                        throw "a";
                     return sess;
                 } catch (_) {}
             }
