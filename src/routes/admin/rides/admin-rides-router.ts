@@ -20,5 +20,11 @@ ridesRouter.get(
     validate({ params: IdParamsDTO }),
     asyncWrap(AdminRidesController.getOne)
 );
+ridesRouter.post(
+	"/:id/pay",
+	authenticate("admin"),
+	validate({ params: IdParamsDTO }),
+	asyncWrap(AdminRidesController.pay)
+);
 
 export default ridesRouter;
