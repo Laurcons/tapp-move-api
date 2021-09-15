@@ -1,3 +1,4 @@
+import { JWTP } from './../jwt-promise';
 
 import Stripe from "stripe";
 import Config from "../environment";
@@ -17,12 +18,12 @@ export default abstract class PaymentsService {
 
     // TODO: merge price into ride
     async createCheckoutForRide(ride: Ride, price: number) {
-        const data = {
+        const token = await JWTP.sign({
+            rideId: ride._id,
             for: "Scooter ride",
             currency: "RON",
             amount: price
-        };
-        const dataToken = encodeURIComponent(Buffer.from(JSON.stringify(data)).toString('base64'));
+        }, Config.get("JWT_SECRET"));
         const session = await stripe.checkout.sessions.create({
             line_items: [{
                 name: "Scooter ride",
@@ -32,7 +33,7 @@ export default abstract class PaymentsService {
             }],
             payment_method_types: [ 'card' ],
             mode: 'payment',
-            success_url: `${Config.get("API_URL")}/pages/paymentResult?success&token=${dataToken}`,
+            success_url: `${Config.get("API_URL")}/pages/paymentResult?success&token=${token}`,
             cancel_url: `${Config.get("API_URL")}/pages/paymentResult?cancel`
         });
         return session;
