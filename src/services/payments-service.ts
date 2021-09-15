@@ -18,12 +18,22 @@ export default abstract class PaymentsService {
 
     // TODO: merge price into ride
     async createCheckoutForRide(ride: Ride, price: number) {
-        const token = await JWTP.sign({
+        const data = {
             rideId: ride._id,
             for: "Scooter ride",
             currency: "RON",
             amount: price
+        };
+
+        const successToken = await JWTP.sign({
+            ...data,
+            status: "success"
         }, Config.get("JWT_SECRET"));
+        const cancelToken = await JWTP.sign({
+            ...data,
+            status: "cancelled"
+        }, Config.get("JWT_SECRET"));
+
         const session = await stripe.checkout.sessions.create({
             line_items: [{
                 name: "Scooter ride",
@@ -33,8 +43,8 @@ export default abstract class PaymentsService {
             }],
             payment_method_types: [ 'card' ],
             mode: 'payment',
-            success_url: `${Config.get("API_URL")}/pages/paymentResult?success&token=${token}`,
-            cancel_url: `${Config.get("API_URL")}/pages/paymentResult?cancel`
+            success_url: `${Config.get("API_URL")}/pages/completePayment?token=${successToken}`,
+            cancel_url: `${Config.get("API_URL")}/pages/completePayment?token=${cancelToken}`
         });
         return session;
     }

@@ -9,7 +9,6 @@ import { Ride } from "./ride-model";
 
 class RideController {
 	private rideService = RideService.instance;
-	private paymentsService = PaymentsService.instance;
 
 	startRide = async (
 		req: Request<{}, {}, StartRideBodyDTO, StartRideQueryDTO>,
@@ -108,18 +107,10 @@ class RideController {
 		res: Response<{ status: string; url: string; }>
 	) => {
 		const { id } = req.params as IdParamsDTO;
-		// const ride = await this.rideService.pay(id);
-		const ride = await this.rideService.findOne(
-			{ _id: id, status: "payment-pending" }
-		);
-		if (!ride) throw ApiError.rideNotFound;
-		const calculated = this.rideService.calculateRideInfo(ride);
-		const session = await this.paymentsService.createCheckoutForRide(ride, calculated.price);
-		if (!session.url)
-			throw new Error();
+		const url = await this.rideService.pay(id);
 		res.json({
 			status: "success",
-			url: session.url,
+			url,
 		});
 	}
 

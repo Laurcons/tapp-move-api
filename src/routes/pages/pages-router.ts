@@ -12,8 +12,8 @@ viewsRouter.get(
 	asyncWrap(PagesController.getForgotPassword)
 );
 viewsRouter.get(
-	"/paymentResult",
-	asyncWrap(PagesController.paymentResult)
+	"/completePayment",
+	asyncWrap(PagesController.completePayment)
 );
 
 const username = Config.get("SCOOTER_PANEL_USER");

@@ -42,28 +42,26 @@ class PagesController {
         res.render("scooterPanel");
     };
 
-	paymentResult = async (req: Request, res: Response) => {
+	completePayment = async (req: Request, res: Response) => {
 		const query = Object.keys(req.query);
 		let additional: Record<string, any> = {};
-		if (query.includes('success')) {
-			if (!req.query.token) {
-				throw ApiError.actionNotAllowed;
-			}
-			const data = await JWTP.verify(req.query.token as string, Config.get("JWT_SECRET"));
-			await this.rideService.updateOne(
-				{ _id: data.rideId },
-				{ $set: { status: "completed" } }
-			);
-			additional.payment = {
-				for: data.for,
-				amount: parseFloat(data.amount) / 100,
-				currency: data.currency,
-			};
+		if (!req.query.token) {
+			throw ApiError.actionNotAllowed;
 		}
-		res.render("paymentResult", {
-			success: query.includes('success'),
-			cancel: query.includes('cancel'),
-			...additional
+		const data = await JWTP.verify(req.query.token as string, Config.get("JWT_SECRET"));
+		await this.rideService.updateOne(
+			{ _id: data.rideId },
+			{ $set: { status: data.status === 'success' ? "completed" : "payment-pending" } }
+		);
+		additional.payment = {
+			for: data.for,
+			amount: parseFloat(data.amount) / 100,
+			currency: data.currency,
+		};
+		res.render("completePayment", {
+			success: data.status === "success",
+			cancel: data.status === "cancelled",
+			...additional,
 		});
 	};
 }

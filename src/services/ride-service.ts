@@ -7,6 +7,7 @@ import { Ride, RideModel, RideStatus } from "../routes/ride/ride-model";
 import { User } from "../routes/user/user-model";
 import { Logger } from "./../logger";
 import CrudService from "./crud-service-base";
+import PaymentsService from "./payments-service";
 import ScooterService from "./scooter-service";
 import { ScooterTcpService } from "./scooter-tcp-service";
 import UserService from "./user-service";
@@ -15,6 +16,7 @@ export default abstract class RideService extends CrudService<Ride> {
 	private scooterService = ScooterService.instance;
 	private userService = UserService.instance;
 	private tcpService = ScooterTcpService.instance;
+	private paymentsService = PaymentsService.instance;
 	private _logger = new Logger({ prefix: "ride-svc" });
 
 	private static _instance: RideService | null = null;
@@ -125,7 +127,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		// 	throw ApiError.alreadyRiding;
 		// }
 		// retrieve scooter
-		const scooter = await this.scooterService.tryReserveScooter(scooterCode);
+		const scooter = await this.scooterService.tryReserveScooter(
+			scooterCode
+		);
 		if (!scooter) {
 			throw ApiError.scooterUnavailable;
 		}
@@ -231,7 +235,7 @@ export default abstract class RideService extends CrudService<Ride> {
 					endedAt: new Date(),
 				},
 				$push: {
-					route: currentCoords
+					route: currentCoords,
 				},
 			},
 			{ new: true, useFindAndModify: false }
@@ -288,15 +292,24 @@ export default abstract class RideService extends CrudService<Ride> {
 		return rides;
 	}
 
-	async getRidesForUser(userId: string, start: number, count: number, status?: RideStatus) {
+	async getRidesForUser(
+		userId: string,
+		start: number,
+		count: number,
+		status?: RideStatus
+	) {
 		let cond: Record<string, any> = {
-			userId: mongoose.Types.ObjectId(userId)
+			userId: mongoose.Types.ObjectId(userId),
 		};
 		if (status) cond.status = status;
 		return this.getSortedAndPaginatedRides({ $match: cond }, start, count);
 	}
 
-	private async getSortedAndPaginatedRides(match: any, start: number, count: number) {
+	private async getSortedAndPaginatedRides(
+		match: any,
+		start: number,
+		count: number
+	) {
 		return this.model.aggregate([
 			match,
 			{
@@ -335,7 +348,8 @@ export default abstract class RideService extends CrudService<Ride> {
 	async getRidesForScooter(scooterId: string, start: number, count: number) {
 		return this.getSortedAndPaginatedRides(
 			{ $match: { scooterId: mongoose.Types.ObjectId(scooterId) } },
-			start, count
+			start,
+			count
 		);
 	}
 
@@ -344,12 +358,20 @@ export default abstract class RideService extends CrudService<Ride> {
 	}
 
 	async pay(rideId: string) {
-		const ride = this.model.findOneAndUpdate(
-			{ _id: mongoose.Types.ObjectId(rideId) },
-			{ status: "completed" },
-			{ new: true }
+		const ride = await this.model.findOneAndUpdate({
+			_id: rideId,
+			status: "payment-pending",
+		}, {
+			status: "payment-initiated"
+		});
+		if (!ride) throw ApiError.rideNotFound;
+		const calculated = this.calculateRideInfo(ride);
+		const session = await this.paymentsService.createCheckoutForRide(
+			ride,
+			calculated.price
 		);
-		return ride;
+        if (!session.url) throw new Error();
+		return session.url;
 	}
 }
 class RideServiceInstance extends RideService {}
