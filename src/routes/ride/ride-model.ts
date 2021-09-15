@@ -4,18 +4,19 @@ export type RideStatus = "ongoing" | "payment-pending" | "payment-initiated" | "
 export const RideStatuses = ["ongoing", "payment-pending", "payment-initiated", "completed"];
 
 export interface Ride extends mongoose.Document {
-    status: RideStatus;
+	status: RideStatus;
 	route: [[number, number]];
-    startLocation: {
-        type: "Point",
-        coordinates: [number, number]
-    },
-    endLocation: {
-        type: "Point",
-        coordinates: [number, number]
-    },
-    startedAt: Date;
-    endedAt?: Date;
+	startLocation: {
+		type: "Point";
+		coordinates: [number, number];
+	};
+	endLocation: {
+		type: "Point";
+		coordinates: [number, number];
+	};
+	startedAt: Date;
+	endedAt?: Date;
+	checkoutRecoveryUrl?: string;
 	scooterId: mongoose.Types.ObjectId;
 	userId: mongoose.Types.ObjectId;
 }
@@ -40,6 +41,10 @@ export const rideSchema = new mongoose.Schema({
     },
     endedAt: {
         type: Date,
+        required: false
+    },
+    checkoutRecoveryUrl: {
+        type: String,
         required: false
     },
     scooterId: mongoose.Types.ObjectId,
