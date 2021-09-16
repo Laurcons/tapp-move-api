@@ -44,7 +44,7 @@ export default abstract class AwsService {
 	}
 
 	async createPresignedPost(key: string, contentType: string, jwtPayload: Record<string, any>) {
-		const jwt = await JWTP.sign(jwtPayload, Config.get("JWT_SECRET"));
+		const jwt = await JWTP.sign(jwtPayload);
 		const presignedPost = await createPresignedPost(this._s3, {
 			Bucket: Config.get("AWS_BUCKET"),
 			Key: key,

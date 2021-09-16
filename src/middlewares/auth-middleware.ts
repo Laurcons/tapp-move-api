@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import ApiError from '../api-error';
 import { asyncWrap } from '../async-wrap';
-import Config from '../environment';
 import { Logger } from '../logger';
 import { AdminAuthService } from '../services/admin-auth-service';
 import SessionService from "../services/session-service";
@@ -31,7 +30,7 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
         //  a const, which it is only after the catch block
         let jwtTEMP;
         try {
-            jwtTEMP = await JWTP.verify(token, Config.get("JWT_SECRET"));
+            jwtTEMP = await JWTP.verify(token);
         } catch (err) {
             throw ApiError.invalidToken;
         }

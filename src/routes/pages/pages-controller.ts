@@ -1,7 +1,6 @@
 import { plainToClass } from "class-transformer";
 import { Request, Response } from "express";
 import ApiError from "../../api-error";
-import Config from "../../environment";
 import { JWTP } from "../../jwt-promise";
 import RideService from "../../services/ride-service";
 import UserService from "../../services/user-service";
@@ -48,7 +47,7 @@ class PagesController {
 		if (!req.query.token) {
 			throw ApiError.actionNotAllowed;
 		}
-		const data = await JWTP.verify(req.query.token as string, Config.get("JWT_SECRET"));
+		const data = await JWTP.verify(req.query.token as string);
 		if (data.status === "cancelled") {
 			this.rideService.cancelPayment(data.rideId);
 		}

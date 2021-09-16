@@ -1,7 +1,6 @@
 import http, { IncomingMessage } from "http";
 import { Server } from "socket.io";
 import ApiError from "../api-error";
-import Config from "../environment";
 import { JWTP } from "../jwt-promise";
 import { Logger } from "../logger";
 import { AdminAuthService } from "./admin-auth-service";
@@ -50,7 +49,7 @@ export abstract class WebsocketService {
 		//  a const, which it is only after the catch block
 		let jwtTEMP;
 		try {
-			jwtTEMP = await JWTP.verify(token, Config.get("JWT_SECRET"));
+			jwtTEMP = await JWTP.verify(token);
 		} catch (err) {
 			throw ApiError.invalidToken;
 		}

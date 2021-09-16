@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import { JwtPayload } from "jsonwebtoken";
 import ApiError from "../api-error";
-import Config from "../environment";
 import { JWTP } from "../jwt-promise";
 import { Admin, AdminModel } from "../routes/admin/accounts/admin-model";
 import CrudService from "./crud-service-base";
@@ -55,7 +54,7 @@ export abstract class AdminAuthService extends CrudService<Admin> {
 		if (!(await this.verifyPassword(password, admin.password)))
 			throw ApiError.userNotFound;
 		// go ahead
-		const jwt = await JWTP.sign({}, Config.get("JWT_SECRET"), {
+		const jwt = await JWTP.sign({}, {
 			subject: admin._id.toString(),
 		});
 		// admin.lastLoginAt = new Date();

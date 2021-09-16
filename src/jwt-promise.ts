@@ -1,13 +1,22 @@
 import jwt from 'jsonwebtoken';
+import Config from './environment';
+
+export interface VerifyOptionsWithSecret extends jwt.VerifyOptions {
+    secretKey?: string;
+}
+export interface SignOptionsWithSecret extends jwt.SignOptions {
+    secretKey?: string;
+}
 
 /**
  * The JWT object, but with promises
  */
 export class JWTP {
 
-    static verify(token: string, secretOrPublicKey: string, options?: jwt.VerifyOptions) {
+    static verify(token: string, options?: VerifyOptionsWithSecret) {
+        const key = options?.secretKey ?? Config.get("JWT_SECRET");
         return new Promise<jwt.JwtPayload>((resolve, reject) => {
-            jwt.verify(token, secretOrPublicKey, options, (err, decoded) => {
+            jwt.verify(token, key, options, (err, decoded) => {
                 if (err) return reject(err);
                 if (decoded)
                     resolve(decoded);
@@ -16,7 +25,8 @@ export class JWTP {
         });
     }
 
-    static sign(payload: Record<string, any>, secretOrPrivateKey: string, options?: jwt.SignOptions) {
+    static sign(payload: Record<string, any>, options?: SignOptionsWithSecret) {
+        const key = options?.secretKey ?? Config.get("JWT_SECRET");
         return new Promise<string>((resolve, reject) => {
             const callback = (err: Error | null, decoded: string | undefined) => {
                 if (err) return reject(err);
@@ -25,9 +35,9 @@ export class JWTP {
                 else reject(new Error());
             };
             if (options)
-                jwt.sign(payload, secretOrPrivateKey, options, callback);
+                jwt.sign(payload, key, options, callback);
             else
-                jwt.sign(payload, secretOrPrivateKey, callback);
+                jwt.sign(payload, key, callback);
         });
     }
 

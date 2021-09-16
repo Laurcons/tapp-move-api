@@ -2,7 +2,6 @@ import bcrypt from "bcrypt";
 import cryptoRandomString from "crypto-random-string";
 import mongoose from "mongoose";
 import ApiError from "../api-error";
-import Config from "../environment";
 import { User, UserModel } from "../routes/user/user-model";
 import { JWTP } from "./../jwt-promise";
 import AwsService from "./aws-service";
@@ -30,7 +29,7 @@ export default abstract class UserService extends CrudService<User> {
 	 */
 	private createSession = async (user: User) => {
 		// create jwt
-		const jwt = await JWTP.sign({}, Config.get("JWT_SECRET"), {
+		const jwt = await JWTP.sign({}, {
 			subject: user._id.toString(),
 		});
 		// create session

@@ -28,11 +28,11 @@ export default abstract class PaymentsService {
         const successToken = await JWTP.sign({
             ...data,
             status: "success"
-        }, Config.get("JWT_SECRET"));
+        });
         const cancelToken = await JWTP.sign({
             ...data,
             status: "cancelled"
-        }, Config.get("JWT_SECRET"));
+        });
 
         const session = await (async () => {
             if (ride.checkoutId) {
