@@ -32,24 +32,18 @@ class RideController {
 	};
 
 	getRide = async (
-		req: Request<Partial<IdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
+		req: Request<Partial<IdParamsDTO>, {}, {}>,
 		res: Response<{
 			status: string;
 			linearDistance: number;
 			duration: number;
-			distanceUnit: string;
-			durationUnit: string;
 		}>
 	) => {
-		const { location } = req.query as LocationQueryDTO;
 		const { id } = req.params as IdParamsDTO;
-		const coords = location.split(",").map(parseFloat) as [number, number];
-		const result = await this.rideService.getRide(id, coords);
+		const result = await this.rideService.getRide(id, req.session.user);
 		res.json({
 			status: "success",
 			...result,
-			distanceUnit: "meters",
-			durationUnit: "millis",
 		});
 	};
 
@@ -88,20 +82,6 @@ class RideController {
 		});
 	};
 
-	getHistory = async (
-		req: Request<{}, {}, {}, PaginationQueryDTO>,
-		res: Response<{ status: string; start: number; count: number; rides: Ride[] }>
-	) => {
-		const start = parseInt(req.query.start ?? "0");
-		const count = parseInt(req.query.count ?? "20");
-		const rides = await this.rideService.getHistory(req.session.user, start, count);
-		res.json({
-			status: "success",
-			start, count,
-			rides,
-		});
-	};
-
 	pay = async (
 		req: Request<Partial<IdParamsDTO>>,
 		res: Response<{ status: string; url: string; }>
@@ -119,10 +99,12 @@ class RideController {
 		res: Response
 	) => {
 		const { status } = req.query;
-		const rides = await this.rideService.getRidesForUser(req.session.user._id, 0, 100000, status);
+		const start = parseInt(req.query.start ?? "0");
+		const count = parseInt(req.query.count ?? "20");
+		const rides = await this.rideService.getRidesForUser(req.session.user._id, start, count, status);
 		res.json({
 			status: "success",
-			rides
+			start, count, rides
 		});
 	}
 }

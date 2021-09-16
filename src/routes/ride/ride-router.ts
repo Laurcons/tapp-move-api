@@ -21,12 +21,6 @@ rideRouter.post(
 	validate({ body: StartRideBodyDTO, query: StartRideQueryDTO }),
 	asyncWrap(RideController.startRide)
 );
-rideRouter.get(
-	"/history",
-	authenticate("user"),
-	validate({ query: PaginationQueryDTO }),
-	asyncWrap(RideController.getHistory)
-);
 rideRouter.get("/:id",
     authenticate("user"),
     validate({ params: IdParamsDTO, query: LocationQueryDTO }),

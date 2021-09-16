@@ -53,6 +53,27 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 		return scooter;
 	}
 
+	async unreserveScooter(code: string) {
+		return this.model.updateOne(
+			{ status: "booking", code },
+			{ status: "available" }
+		);
+	}
+
+	async unbookScooter(code: string) {
+		return this.model.updateOne(
+			{ status: "booked", code },
+			{ status: "available" }
+		);
+	}
+
+	async setUnlocked(scooter: Scooter, isUnlocked: boolean) {
+		return this.model.updateOne(
+			{ _id: scooter._id },
+			{ $set: { isUnlocked } }
+		);
+	}
+
 	async findAll() {
 		return await this.model.find({});
 	}

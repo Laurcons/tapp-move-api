@@ -1,7 +1,8 @@
 import * as cv from "class-validator";
+import { PaginationQueryDTO } from "../../common-dtos/pagination-query-dto";
 import { RideStatus, RideStatuses } from "./ride-model";
 
-export class GetRidesQueryDTO {
+export class GetRidesQueryDTO extends PaginationQueryDTO {
     @cv.IsIn(RideStatuses)
     @cv.IsOptional()
     status?: RideStatus;

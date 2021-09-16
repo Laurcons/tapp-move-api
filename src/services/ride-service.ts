@@ -9,7 +9,7 @@ import { Logger } from "./../logger";
 import CrudService from "./crud-service-base";
 import PaymentsService from "./payments-service";
 import ScooterService from "./scooter-service";
-import { ScooterTcpService } from "./scooter-tcp-service";
+import { ScooterLocationEvent, ScooterTcpService } from "./scooter-tcp-service";
 import UserService from "./user-service";
 
 export default abstract class RideService extends CrudService<Ride> {
@@ -27,46 +27,51 @@ export default abstract class RideService extends CrudService<Ride> {
 
 	constructor() {
 		super(RideModel);
-		this.tcpService.events.on("scooterLocation", async (data) => {
-			const { lockId, location } = data;
-			const scooter = await this.scooterService.findOne({ lockId });
-			if (!scooter) {
-				this._logger.log(
-					"Couldn't find lockId in database in scooterLocation handler"
-						.red
-				);
-				throw "what";
-			}
-			const ride = await this.model.findOne({
-				scooterId: scooter._id,
-				status: "ongoing",
-			});
-			if (!ride && data.isFromTracking) {
-				// we tell the scooter to stop sending at interval
-				await this.tcpService.endTrackPosition(lockId);
-			}
-			if (!ride) {
-				return;
-			}
-			const lastPoint = ride.route[ride.route.length - 1];
-			if (!lastPoint) throw "what";
-			const distance = getDistance(lastPoint, location);
-			// if distance is less than 10 meters, don't add
-			if (distance < 10) {
-				this._logger.log(
-					`Distance since last point was ${distance} <10m so it was ignored`
-				);
-				return;
-			}
-			// add it
-			await this.model.updateOne(
-				{ _id: ride._id },
-				{ $push: { route: location } }
-			);
+		this.tcpService.events.on("scooterLocation", (data) => this.handleNewRoutePoint(data));
+	}
+
+	private async handleNewRoutePoint(data: ScooterLocationEvent) {
+		const { lockId, location } = data;
+		const scooter = await this.scooterService.findOne({ lockId });
+		if (!scooter) {
 			this._logger.log(
-				`Added location with d=${distance} for code=${scooter.code}`
+				"Couldn't find lockId in database in scooterLocation handler"
+					.red
 			);
+			throw "what";
+		}
+		const ride = await this.model.findOne({
+			scooterId: scooter._id,
+			status: "ongoing",
 		});
+		if (!ride && data.isFromTracking) {
+			// we tell the scooter to stop sending at interval
+			await this.tcpService.endTrackPosition(lockId);
+		}
+		if (!ride) {
+			return;
+		}
+		const lastPoint = ride.route[ride.route.length - 1];
+		if (!lastPoint) throw "what";
+		const distance = getDistance(lastPoint, location);
+		// if distance is less than 10 meters, don't add
+		if (distance < 10) {
+			this._logger.log(
+				`Distance since last point was ${distance} <10m so it was ignored`
+			);
+			return;
+		}
+		this.pushRouteLocation(ride, location);
+		this._logger.log(
+			`Added location with d=${distance} for code=${scooter.code}`
+		);
+	}
+
+	pushRouteLocation(ride: Ride, location: [number, number]) {
+		return this.model.updateOne(
+			{ _id: ride._id },
+			{ $push: { route: location } }
+		);
 	}
 
 	calculateRideInfo(ride: Ride) {
@@ -104,10 +109,11 @@ export default abstract class RideService extends CrudService<Ride> {
 		return !!result;
 	}
 
-	async getRide(rideId: string, currentLocation: [number, number]) {
+	async getRide(rideId: string, user: User) {
 		const ride = await this.model.findOne({
 			_id: mongoose.Types.ObjectId(rideId),
 			status: "ongoing",
+			userId: user._id,
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride);
@@ -123,13 +129,8 @@ export default abstract class RideService extends CrudService<Ride> {
 		coordinates?: [number, number],
 		isNFC?: boolean
 	) {
-		// if (await this.isUserRiding(user)) {
-		// 	throw ApiError.alreadyRiding;
-		// }
 		// retrieve scooter
-		const scooter = await this.scooterService.tryReserveScooter(
-			scooterCode
-		);
+		const scooter = await this.scooterService.tryReserveScooter(scooterCode);
 		if (!scooter) {
 			throw ApiError.scooterUnavailable;
 		}
@@ -150,7 +151,6 @@ export default abstract class RideService extends CrudService<Ride> {
 				if (dist > 80) throw ApiError.tooFarAway;
 			}
 			// unlock the actual scooter
-			console.log(scooter.toObject());
 			if (!scooter.isDummy) {
 				if (!scooter.isUnlocked)
 					await this.tcpService.unlockScooter(scooter.lockId);
@@ -182,12 +182,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			);
 			return ride;
 		} catch (ex) {
-			// scooter.status = "available";
-			// await scooter.save();
-			await this.scooterService.updateOne(
-				{ _id: scooter._id },
-				{ $set: { status: "available" } }
-			);
+			this.scooterService.unreserveScooter(scooterCode);
 			console.log(ex);
 			if (ex instanceof ApiError) throw ex;
 			throw ApiError.scooterUnavailable;
@@ -217,10 +212,7 @@ export default abstract class RideService extends CrudService<Ride> {
 				);
 			}
 		} else {
-			await this.scooterService.updateOne(
-				{ _id: ride.scooterId },
-				{ $set: { isUnlocked: true } }
-			);
+			await this.scooterService.setUnlocked(scooter, true);
 		}
 		// end in db
 		const newRide = await this.model.findOneAndUpdate(
@@ -240,10 +232,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			},
 			{ new: true, useFindAndModify: false }
 		);
-		await this.scooterService.updateOne(
-			{ _id: ride.scooterId },
-			{ $set: { status: "available" } }
-		);
+		await this.scooterService.unbookScooter(scooter.code);
 		return {
 			ride: newRide,
 			...details,
@@ -276,20 +265,9 @@ export default abstract class RideService extends CrudService<Ride> {
 		} else {
 			// update scooter n set locked
 			if (lock !== undefined) {
-				await this.scooterService.updateOne(
-					{ _id: scooter._id },
-					{ $set: { isUnlocked: !lock } }
-				);
+				await this.scooterService.setUnlocked(scooter._id, !lock);
 			}
 		}
-	}
-
-	async getHistory(user: User, start: number, count: number) {
-		const rides = await this.model
-			.find({ userId: user._id })
-			.skip(start)
-			.limit(count);
-		return rides;
 	}
 
 	async getRidesForUser(

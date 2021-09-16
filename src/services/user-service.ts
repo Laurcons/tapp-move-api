@@ -27,36 +27,32 @@ export default abstract class UserService extends CrudService<User> {
 	/**
 	 * @returns JWT token
 	 */
-	private createSession = async (user: User) => {
+	private async createSession(user: User) {
 		// create jwt
 		const jwt = await JWTP.sign({}, {
 			subject: user._id.toString(),
 		});
 		// create session
-		const session = await this.sessionService.insert({
-			jwt,
-			user,
-			type: "user",
-		});
+		this.sessionService.createUserSession(user, jwt);
 		return jwt;
 	};
 
-	private isEmailAvailable = async (email: string) => {
+	private async isEmailAvailable(email: string) {
 		const result = await this.model.findOne({
 			email,
 		});
 		return !result;
 	};
 
-	private verifyPassword = async (raw: string, hashed: string) => {
+	private async verifyPassword(raw: string, hashed: string) {
 		return await bcrypt.compare(raw, hashed);
 	};
 
-	private hashPassword = async (raw: string) => {
+	private async hashPassword(raw: string) {
 		return await bcrypt.hash(raw, 12);
 	};
 
-	register = async (username: string, passwordRaw: string, email: string) => {
+	async register(username: string, passwordRaw: string, email: string) {
 		if (!(await this.isEmailAvailable(email))) {
 			throw ApiError.emailNotAvailable;
 		}
@@ -73,7 +69,7 @@ export default abstract class UserService extends CrudService<User> {
 		};
 	};
 
-	login = async (email: string, password: string) => {
+	async login(email: string, password: string) {
 		const user = await this.model.findOne({ email }).select("+password");
 		if (!user) throw ApiError.emailPasswordIncorrect;
 		if (user.suspendedReason) {
@@ -95,11 +91,11 @@ export default abstract class UserService extends CrudService<User> {
 		};
 	};
 
-	logout = async (user: User) => {
+	async logout(user: User) {
 		await this.sessionService.deleteOne({ _id: user._id });
 	};
 
-	update = async (
+	async update(
 		user: User,
 		updates: {
 			email?: string;
@@ -107,8 +103,7 @@ export default abstract class UserService extends CrudService<User> {
 			username?: string;
 			oldPassword: string;
 		}
-	) => {
-		// const updateObject: Record<string, string> = {};
+	) {
 		const { email, password, oldPassword } = updates;
 		if (email) {
 			if (!this.isEmailAvailable(email)) {
@@ -147,7 +142,7 @@ export default abstract class UserService extends CrudService<User> {
 		return newUser;
 	};
 
-	beginForgotPassword = async (email: string) => {
+	async beginForgotPassword(email: string) {
 		const user = await this.model.findOne({ email });
 		if (!user) return undefined;
 		const token = cryptoRandomString({ length: 100 });
@@ -162,18 +157,15 @@ export default abstract class UserService extends CrudService<User> {
 		return token;
 	};
 
-	findUserWithForgotPasswordToken = async (token: string) => {
+	async findUserWithForgotPasswordToken(token: string) {
 		const user = await this.model.findOne({ forgotPasswordToken: token });
 		return user;
 	};
 
-	updatePasswordWithToken = async (token: string, newPassword: string) => {
+	async updatePasswordWithToken(token: string, newPassword: string) {
 		const user = await this.model.findOne({ forgotPasswordToken: token });
 		if (!user) throw ApiError.userNotFound;
 		const password = await this.hashPassword(newPassword);
-		// forgotPasswordToken = undefined;
-		// await this.sessionService.deleteOne({ userId: user._id });
-		// await user.save();
 		await this.model.updateOne(
 			{ _id: user._id },
 			{
@@ -184,7 +176,7 @@ export default abstract class UserService extends CrudService<User> {
 		
 	};
 
-	uploadDriversLicense = async (user: User, image: Express.Multer.File) => {
+	async uploadDriversLicense(user: User, image: Express.Multer.File) {
 		const key = await this.awsService.uploadDriversLicense(user._id, image);
 		await this.setDriversLicense(user._id, key);
 	};
@@ -204,7 +196,7 @@ export default abstract class UserService extends CrudService<User> {
 		);
 	}
 
-	incrementRideCount = async (user: User) => {
+	async incrementRideCount(user: User) {
 		const newUser = await this.model.findOneAndUpdate(
 			{ _id: user._id },
 			{ $inc: { totalRides: 1 } },

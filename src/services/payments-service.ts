@@ -62,10 +62,6 @@ export default abstract class PaymentsService {
         return session;
     }
 
-    async endCheckoutForRide() {
-
-    }
-
     async verifyWebhookSignature(body: string, signature: string) {
         return stripe.webhooks.constructEvent(body, signature, Config.get("STRIPE_WEBHOOK_SECRET"));
     }
