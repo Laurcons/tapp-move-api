@@ -24,7 +24,6 @@ import UserService from "./services/user-service";
 import { WebsocketService } from "./services/websocket-service";
 import http from "http";
 import throttle from "./middlewares/throttle-middleware";
-import rawBody from "./middlewares/raw-body-middleware";
 import { rawBodySaver } from "./raw-body-saver";
 
 const app = express();
