@@ -311,21 +311,19 @@ export default abstract class RideService extends CrudService<Ride> {
 		count: number
 	) {
 		const order = [ "ongoing", "payment-initiated", "payment-pending", "completed" ];
-		const buildSortingMap = (pos = 0): any => {
-			const isLast = order.length === pos + 1;
-			return {
-				$cond: [
-					{ $eq: ["$status", order[pos] ] },
-					pos,
-					!isLast ? buildSortingMap(pos + 1) : pos + 1
-				]
-			};
-		};
+		const buildSortingSwitch = () => ({
+			$switch: {
+				branches: order.map((o, i) => ({
+					case: { $eq: ["$status", o] }, then: i
+				})),
+				default: order.length
+			}
+		});
 		return this.model.aggregate([
 			match,
 			{
 				$addFields: {
-					statusInt: buildSortingMap(),
+					statusInt: buildSortingSwitch(),
 				},
 			},
 			{ $sort: { statusInt: 1, startedAt: -1 } },
