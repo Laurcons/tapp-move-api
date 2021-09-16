@@ -24,6 +24,8 @@ import UserService from "./services/user-service";
 import { WebsocketService } from "./services/websocket-service";
 import http from "http";
 import throttle from "./middlewares/throttle-middleware";
+import rawBody from "./middlewares/raw-body-middleware";
+import { rawBodySaver } from "./raw-body-saver";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -37,7 +39,9 @@ const logger = new Logger({ prefix: "init" });
 app.use(cors({
 	credentials: true
 }));
-app.use(express.json());
+app.use(express.json({
+	verify: rawBodySaver
+}));
 app.use(morgan(Config.get("MORGAN_MODE")));
 
 // configure pages

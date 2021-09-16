@@ -346,7 +346,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		return this.getSortedAndPaginatedRides({ $match: {} }, start, count);
 	}
 
-	async pay(rideId: string) {
+	async beginPayment(rideId: string) {
 		const ride = await this.model.findOneAndUpdate({
 			_id: rideId,
 			status: /(payment-pending)|(payment-initiated)/
@@ -364,6 +364,24 @@ export default abstract class RideService extends CrudService<Ride> {
 			{ $set: { checkoutId: session.id } }
 		);
 		return session.url as string;
+	}
+
+	async endPayment(rideId: string) {
+		await this.model.updateOne({
+			_id: rideId,
+		}, {
+			$set: { status: "completed" },
+			$unset: { checkoutId: 1 }
+		});
+	}
+
+	async cancelPayment(rideId: string) {
+		await this.model.updateOne({
+			_id: rideId,
+		}, {
+			$set: { status: "payment-pending" },
+			$unset: { checkoutId: 1 }
+		});
 	}
 }
 class RideServiceInstance extends RideService {}

@@ -58,7 +58,7 @@ class AdminRidesController {
 		res: Response<{ status: string; url: string }>
 	) => {
 		const { id } = req.params as IdParamsDTO;
-		const url = await this.rideService.pay(id);
+		const url = await this.rideService.beginPayment(id);
 		res.json({
 			status: "success",
 			url,

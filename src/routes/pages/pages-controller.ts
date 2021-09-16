@@ -49,13 +49,9 @@ class PagesController {
 			throw ApiError.actionNotAllowed;
 		}
 		const data = await JWTP.verify(req.query.token as string, Config.get("JWT_SECRET"));
-		await this.rideService.updateOne(
-			{ _id: data.rideId },
-			{
-				$set: { status: data.status === 'success' ? "completed" : "payment-pending" },
-				$unset: { checkoutId: 1 }
-			}
-		);
+		if (data.status === "cancelled") {
+			this.rideService.cancelPayment(data.rideId);
+		}
 		additional.payment = {
 			for: data.for,
 			amount: parseFloat(data.amount) / 100,

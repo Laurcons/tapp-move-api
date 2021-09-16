@@ -53,10 +53,21 @@ export default abstract class PaymentsService {
                 payment_method_types: [ 'card' ],
                 mode: 'payment',
                 success_url: `${Config.get("API_URL")}/pages/completePayment?token=${successToken}`,
-                cancel_url: `${Config.get("API_URL")}/pages/completePayment?token=${cancelToken}`
+                cancel_url: `${Config.get("API_URL")}/pages/completePayment?token=${cancelToken}`,
+                metadata: {
+                    rideId: ride._id.toString()
+                }
             });
         })();
         return session;
+    }
+
+    async endCheckoutForRide() {
+
+    }
+
+    async verifyWebhookSignature(body: string, signature: string) {
+        return stripe.webhooks.constructEvent(body, signature, Config.get("STRIPE_WEBHOOK_SECRET"));
     }
 
 }
