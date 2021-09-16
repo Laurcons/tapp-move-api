@@ -34,6 +34,12 @@ const PORT = process.env.PORT ?? 8000;
 
 const logger = new Logger({ prefix: "init" });
 
+app.use(cors({
+	credentials: true
+}));
+app.use(express.json());
+app.use(morgan(Config.get("MORGAN_MODE")));
+
 // configure pages
 app.engine("mst", mustacheExpress());
 app.set("view engine", "mst");
@@ -49,12 +55,6 @@ if (process.env.NODE_ENV !== "production") {
 		app.use(throttle(parseInt(process.env.THROTTLING_MS)));
 	}
 }
-
-app.use(cors({
-	credentials: true
-}));
-app.use(express.json());
-app.use(morgan(Config.get("MORGAN_MODE")));
 
 app.use("/api-v1", appRouter);
 
