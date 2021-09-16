@@ -320,15 +320,23 @@ export default abstract class RideService extends CrudService<Ride> {
 							0,
 							{
 								$cond: [
-									{ $eq: ["$status", "payment-pending"] },
+									{ $eq: ["$status", "payment-initiated"] },
 									1,
 									{
 										$cond: [
 											{
-												$eq: ["$status", "completed"],
+												$eq: ["$status", "payment-pending"],
 											},
 											2,
-											3,
+											{
+												$cond: [
+													{
+														$eq: ["$status", "completed"]
+													},
+													3,
+													4
+												]
+											},
 										],
 									},
 								],
