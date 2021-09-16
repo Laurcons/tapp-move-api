@@ -48,6 +48,13 @@ export abstract class AdminAuthService extends CrudService<Admin> {
 		return session;
 	}
 
+	async updateLastLogin(admin: Admin) {
+		await this.model.updateOne(
+			{ _id: admin._id },
+			{ $set: { lastLoginAt: new Date() } }
+		);
+	}
+
 	async login(email: string, password: string) {
 		const admin = await this.model.findOne({ email }).select("+password");
 		if (!admin) throw ApiError.userNotFound;
@@ -57,17 +64,8 @@ export abstract class AdminAuthService extends CrudService<Admin> {
 		const jwt = await JWTP.sign({}, {
 			subject: admin._id.toString(),
 		});
-		// admin.lastLoginAt = new Date();
-		// await admin.save();
-		await this.model.updateOne(
-			{ _id: admin._id },
-			{ $set: { lastLoginAt: new Date() } }
-		);
-		await this.sessionService.insert({
-			type: "admin",
-			jwt,
-			admin,
-		});
+		this.updateLastLogin(admin);
+		this.sessionService.createAdminSession(admin, jwt);
 		return {
 			jwt,
 			admin,
@@ -75,9 +73,7 @@ export abstract class AdminAuthService extends CrudService<Admin> {
 	}
 
 	async logout(admin: Admin) {
-		await this.sessionService.deleteMany({
-			"admin._id": admin._id,
-		});
+		this.sessionService.removeAdminSession(admin);
 	}
 }
 class AdminAuthServiceInstance extends AdminAuthService {}

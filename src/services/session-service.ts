@@ -1,3 +1,4 @@
+import { Admin } from "../routes/admin/accounts/admin-model";
 import { Session, SessionModel } from "../routes/user/session-model";
 import CrudService from "./crud-service-base";
 
@@ -34,6 +35,20 @@ export default abstract class SessionService extends CrudService<Session> {
 		if (withPassword) sessionPromise.select("+admin.password");
 		const session = await sessionPromise;
 		return session;
+	}
+	
+	async createAdminSession(admin: Admin, jwt: string) {
+		return this.model.create({
+			type: "admin",
+			jwt,
+			admin,
+		});
+	}
+
+	async removeAdminSession(admin: Admin) {
+		await this.model.deleteMany({
+			"admin._id": admin._id,
+		});
 	}
 }
 class SessionServiceInstance extends SessionService {}
