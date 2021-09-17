@@ -19,11 +19,11 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
         try {
             regexResultTEMP = regex.exec(req.headers.authorization ?? "");
         } catch (ex) {
-            throw ApiError.invalidToken;
+            throw ApiError.users.invalidToken;
         }
         const regexResult = regexResultTEMP;
         if (!regexResult)
-            throw ApiError.invalidToken;
+            throw ApiError.users.invalidToken;
         const token = regexResult[1];
         // decode the jwt
         // we use a TEMP variable here because i really want my 'jwt' to be
@@ -32,17 +32,17 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
         try {
             jwtTEMP = await JWTP.verify(token);
         } catch (err) {
-            throw ApiError.invalidToken;
+            throw ApiError.users.invalidToken;
         }
         const jwt = jwtTEMP;
         const userId = jwt.sub;
         if (!userId)
-            throw ApiError.invalidToken;
+            throw ApiError.users.invalidToken;
         // now find the user
         if (type === "user") {
             const session = await sessionService.findSessionForUserJwt(token, options?.withPassword ?? false);
             if (!session || session.expires.getTime() < Date.now()) {
-                throw ApiError.invalidToken;
+                throw ApiError.users.invalidToken;
             }
             // everything should be good now
             _logger?.log(`User ${session.user.username} token ...${token.substr(-5)}`);
@@ -51,7 +51,7 @@ export default function authenticate(type: "user" | "admin", options?: { withPas
         } else if (type === "admin") {
             const session = await adminAuthService.verifyToken(jwt, options);
             if (!session || session.expires.getTime() < Date.now()) {
-				throw ApiError.invalidToken;
+				throw ApiError.users.invalidToken;
 			}
             _logger?.log(`Admin ${session.admin.email} token ...${token.substr(-5)}`);
             req.session = session;

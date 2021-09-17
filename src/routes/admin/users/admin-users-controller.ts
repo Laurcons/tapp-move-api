@@ -40,7 +40,7 @@ class AdminUserController {
 	getOne = async (req: Request<Partial<IdParamsDTO>>, res: Response) => {
 		const { id } = req.params as IdParamsDTO;
 		const user = await this.userService.findId(id);
-		if (!user) throw ApiError.userNotFound;
+		if (!user) throw ApiError.users.userNotFound;
 		const driversLicense = user.driversLicenseKey
 			? await this.awsService.getSignedUrl(user.driversLicenseKey)
 			: undefined;
@@ -61,7 +61,7 @@ class AdminUserController {
 		const start = parseInt(req.query.start ?? "0");
 		const count = parseInt(req.query.count ?? "5");
 		const user = await this.userService.findId(id);
-		if (!user) throw ApiError.userNotFound;
+		if (!user) throw ApiError.users.userNotFound;
 		const rides = await this.rideService
 			.getRidesForUser(user._id, start, count)
 			.then((rides) =>

@@ -44,7 +44,7 @@ class UserController {
 		req: express.Request,
 		res: express.Response<{ status: string }>
 	) => {
-		if (!req.file) throw ApiError.fileNotUploaded;
+		if (!req.file) throw ApiError.uploads.fileNotUploaded;
 		await this.userService.uploadDriversLicense(req.session.user, req.file);
 		res.json({
 			status: "success",

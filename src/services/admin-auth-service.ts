@@ -36,14 +36,14 @@ export abstract class AdminAuthService extends CrudService<Admin> {
 	async verifyToken(token: JwtPayload, options?: { withPassword?: boolean }) {
 		const userId = token.sub;
 		if (!userId) {
-			throw ApiError.invalidToken;
+			throw ApiError.users.invalidToken;
 		}
 		const session = await this.sessionService.findSessionForAdmin(
 			userId,
 			options?.withPassword ?? false
 		);
 		if (!session || session.expires.getTime() < Date.now()) {
-			throw ApiError.invalidToken;
+			throw ApiError.users.invalidToken;
 		}
 		return session;
 	}
@@ -57,9 +57,9 @@ export abstract class AdminAuthService extends CrudService<Admin> {
 
 	async login(email: string, password: string) {
 		const admin = await this.model.findOne({ email }).select("+password");
-		if (!admin) throw ApiError.userNotFound;
+		if (!admin) throw ApiError.users.userNotFound;
 		if (!(await this.verifyPassword(password, admin.password)))
-			throw ApiError.userNotFound;
+			throw ApiError.users.userNotFound;
 		// go ahead
 		const jwt = await JWTP.sign({}, {
 			subject: admin._id.toString(),

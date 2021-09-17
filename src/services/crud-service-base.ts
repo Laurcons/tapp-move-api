@@ -46,7 +46,7 @@ abstract class CrudService<Doc extends mongoose.Document> {
 			try {
 				id = new mongoose.Types.ObjectId(id);
 			} catch (e) {
-				throw ApiError.invalidIdError;
+				throw ApiError.general.invalidIdError;
 			}
 		}
 		return this.model.findById(id);

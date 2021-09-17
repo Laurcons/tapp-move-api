@@ -34,7 +34,7 @@ class ScooterController {
 	) => {
 		const { code } = req.params as ScooterCodeParamsDTO;
 		const scooter = await this.scooterService.findOne({ code });
-		if (!scooter) throw ApiError.scooterNotFound;
+		if (!scooter) throw ApiError.scooters.scooterNotFound;
 		res.json({
 			status: "success",
 			scooter,

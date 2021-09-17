@@ -43,7 +43,7 @@ export abstract class WebsocketService {
 	private async allowRequest(req: IncomingMessage) {
 		const regex = /^Bearer ([a-zA-Z0-9-_.]+)$/;
 		const regexResult = regex.exec(req.headers.authorization ?? "");
-		if (!regexResult) throw ApiError.invalidToken;
+		if (!regexResult) throw ApiError.users.invalidToken;
 		const token = regexResult[1];
 		// we use a TEMP variable here because i really want my 'jwt' to be
 		//  a const, which it is only after the catch block
@@ -51,7 +51,7 @@ export abstract class WebsocketService {
 		try {
 			jwtTEMP = await JWTP.verify(token);
 		} catch (err) {
-			throw ApiError.invalidToken;
+			throw ApiError.users.invalidToken;
 		}
 		const jwt = jwtTEMP;
 		this.adminAuthService.verifyToken(jwt);

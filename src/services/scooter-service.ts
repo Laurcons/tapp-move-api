@@ -100,7 +100,7 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 		// retrieve scooter
 		const scooter = await this.model.findOne({ status: "available", code: scooterCode });
 		if (!scooter) {
-			throw ApiError.scooterUnavailable;
+			throw ApiError.scooters.scooterUnavailable;
 		}
 		// check distance
 		const dist = getDistance(
@@ -110,7 +110,7 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 				lon: scooter.location.coordinates[1],
 			}
 		);
-		if (dist > 100) throw ApiError.tooFarAway;
+		if (dist > 100) throw ApiError.scooters.tooFarAway;
 		if (scooter.isDummy) {
 			return true;
 		} else {

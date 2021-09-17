@@ -54,7 +54,7 @@ export default abstract class UserService extends CrudService<User> {
 
 	async register(username: string, passwordRaw: string, email: string) {
 		if (!(await this.isEmailAvailable(email))) {
-			throw ApiError.emailNotAvailable;
+			throw ApiError.users.emailNotAvailable;
 		}
 		const hashed = await this.hashPassword(passwordRaw);
 		const user = await this.model.create({
@@ -71,12 +71,12 @@ export default abstract class UserService extends CrudService<User> {
 
 	async login(email: string, password: string) {
 		const user = await this.model.findOne({ email }).select("+password");
-		if (!user) throw ApiError.emailPasswordIncorrect;
+		if (!user) throw ApiError.users.emailusers.passwordIncorrect;
 		if (user.suspendedReason) {
-			throw ApiError.userSuspended;
+			throw ApiError.users.userSuspended;
 		}
 		if (!(await this.verifyPassword(password, user.password)))
-			throw ApiError.emailPasswordIncorrect;
+			throw ApiError.users.emailusers.passwordIncorrect;
 		// remove this step with caution: this step reselects the user without the
 		//  password. omitting this step might send to the frontend the password field
 		const newUser = await this.model.findOneAndUpdate(
@@ -107,13 +107,13 @@ export default abstract class UserService extends CrudService<User> {
 		const { email, password, oldPassword } = updates;
 		if (email) {
 			if (!this.isEmailAvailable(email)) {
-				throw ApiError.emailNotAvailable;
+				throw ApiError.users.emailNotAvailable;
 			}
 		}
 		let hashedPassword = undefined;
 		if (password) {
 			if (!(await this.verifyPassword(oldPassword, user.password))) {
-				throw ApiError.passwordIncorrect;
+				throw ApiError.users.passwordIncorrect;
 			}
 			hashedPassword = await this.hashPassword(password);
 		}
@@ -164,7 +164,7 @@ export default abstract class UserService extends CrudService<User> {
 
 	async updatePasswordWithToken(token: string, newPassword: string) {
 		const user = await this.model.findOne({ forgotPasswordToken: token });
-		if (!user) throw ApiError.userNotFound;
+		if (!user) throw ApiError.users.userNotFound;
 		const password = await this.hashPassword(newPassword);
 		await this.model.updateOne(
 			{ _id: user._id },
@@ -189,7 +189,7 @@ export default abstract class UserService extends CrudService<User> {
 			{ $set: { driversLicenseKey: key, isLicenseValid: true } },
 			{ new: true }
 		);
-		if (!user) throw ApiError.userNotFound;
+		if (!user) throw ApiError.users.userNotFound;
 		await this.sessionService.updateMany(
 			{ "user._id": userId },
 			{ $set: { user: user.toObject() } }
@@ -203,7 +203,7 @@ export default abstract class UserService extends CrudService<User> {
 			{ new: true }
 		);
 		if (!newUser)
-			throw ApiError.userNotFound;
+			throw ApiError.users.userNotFound;
 		await this.sessionService.updateOne(
 			{ "user._id": user._id },
 			{ $set: { user: newUser } }

@@ -45,7 +45,7 @@ class PagesController {
 		const query = Object.keys(req.query);
 		let additional: Record<string, any> = {};
 		if (!req.query.token) {
-			throw ApiError.actionNotAllowed;
+			throw ApiError.general.actionNotAllowed;
 		}
 		const data = await JWTP.verify(req.query.token as string);
 		if (data.status === "cancelled") {

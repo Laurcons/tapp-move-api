@@ -39,7 +39,7 @@ class AdminRidesController {
 	getOne = async (req: Request<Partial<IdParamsDTO>>, res: Response) => {
 		const { id } = req.params as IdParamsDTO;
 		const ride = await this.rideService.getCalculatedRide(id);
-		if (!ride) throw ApiError.rideNotFound;
+		if (!ride) throw ApiError.rides.rideNotFound;
 		const xride = {
 			...ride.toJSON(),
 			user: await this.userService.findId(ride.userId),

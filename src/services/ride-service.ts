@@ -105,7 +105,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			_id: mongoose.Types.ObjectId(rideId),
 			userId: user._id,
 		});
-		if (!ride) throw ApiError.rideNotFound;
+		if (!ride) throw ApiError.rides.rideNotFound;
 		const details = this.calculateRideInfo(ride);
 		const newRide = await this.model.findOneAndUpdate(
 			{ _id: ride._id },
@@ -124,7 +124,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		// retrieve scooter
 		const scooter = await this.scooterService.tryReserveScooter(scooterCode);
 		if (!scooter) {
-			throw ApiError.scooterUnavailable;
+			throw ApiError.scooters.scooterUnavailable;
 		}
 		// in case any of the following fails, the scooter needs be unreserved
 		try {
@@ -140,7 +140,7 @@ export default abstract class RideService extends CrudService<Ride> {
 						lon: scooter.location.coordinates[1],
 					}
 				);
-				if (dist > 80) throw ApiError.tooFarAway;
+				if (dist > 80) throw ApiError.scooters.tooFarAway;
 			}
 			// unlock the actual scooter
 			if (!scooter.isDummy) {
@@ -180,7 +180,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			this.scooterService.unreserveScooter(scooterCode);
 			console.log(ex);
 			if (ex instanceof ApiError) throw ex;
-			throw ApiError.scooterUnavailable;
+			throw ApiError.scooters.scooterUnavailable;
 		}
 	}
 
@@ -189,12 +189,12 @@ export default abstract class RideService extends CrudService<Ride> {
 			_id: mongoose.Types.ObjectId(rideId),
 			status: "ongoing",
 		});
-		if (!ride) throw ApiError.rideNotFound;
+		if (!ride) throw ApiError.rides.rideNotFound;
 		const details = this.calculateRideInfo(ride);
 		const scooter = await this.scooterService.findOne({
 			_id: ride.scooterId,
 		});
-		if (!scooter) throw ApiError.scooterNotFound;
+		if (!scooter) throw ApiError.scooters.scooterNotFound;
 		// end physically
 		if (!scooter.isDummy) {
 			try {
@@ -237,12 +237,12 @@ export default abstract class RideService extends CrudService<Ride> {
 			_id: mongoose.Types.ObjectId(rideId),
 			status: "ongoing",
 		});
-		if (!ride) throw ApiError.rideNotFound;
+		if (!ride) throw ApiError.rides.rideNotFound;
 		// retrieve scooter
 		const scooter = await this.scooterService.findOne({
 			_id: ride.scooterId,
 		});
-		if (!scooter) throw ApiError.scooterNotFound;
+		if (!scooter) throw ApiError.scooters.scooterNotFound;
 		const { lock } = settings;
 		// set on actual scooter
 		if (!scooter.isDummy) {
@@ -324,7 +324,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		}, {
 			status: "payment-initiated"
 		});
-		if (!ride) throw ApiError.rideNotFound;
+		if (!ride) throw ApiError.rides.rideNotFound;
 		const session = await this.paymentsService.createCheckoutForRide(ride);
 		await this.model.updateOne(
 			{ _id: rideId },
@@ -356,7 +356,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			rideId = mongoose.Types.ObjectId(rideId);
 		}
 		const origRide = await this.model.findOne({ _id: rideId });
-		if (!origRide) throw ApiError.rideNotFound;
+		if (!origRide) throw ApiError.rides.rideNotFound;
 		return this.model.findOneAndUpdate(
 			{ _id: rideId },
 			{ $set: this.calculateRideInfo(origRide) }
