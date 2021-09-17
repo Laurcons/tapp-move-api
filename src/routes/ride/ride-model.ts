@@ -10,13 +10,16 @@ export interface Ride extends mongoose.Document {
 		type: "Point";
 		coordinates: [number, number];
 	};
-	endLocation: {
+	endLocation?: {
 		type: "Point";
 		coordinates: [number, number];
 	};
 	startedAt: Date;
 	endedAt?: Date;
 	checkoutId?: string;
+    price: number;
+    distance: number;
+    duration: number;
 	scooterId: mongoose.Types.ObjectId;
 	userId: mongoose.Types.ObjectId;
 }
@@ -33,7 +36,8 @@ export const rideSchema = new mongoose.Schema({
     },
     endLocation: {
         type: { type: String, default: "Point" },
-        coordinates: [Number, Number]
+        coordinates: [Number, Number],
+        required: false
     },
     startedAt: {
         type: Date,
@@ -47,12 +51,15 @@ export const rideSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    price: Number,
+    distance: Number,
+    duration: Number,
     scooterId: mongoose.Types.ObjectId,
     userId: mongoose.Types.ObjectId
 }, {
     toJSON: {
         transform: (doc: Ride, ret: any) => {
-            ret.endLocation = doc.endLocation.coordinates;
+            ret.endLocation = doc.endLocation?.coordinates;
             ret.startLocation = doc.startLocation.coordinates;
         }
     }

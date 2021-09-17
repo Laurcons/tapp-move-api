@@ -22,7 +22,6 @@ class AdminRidesController {
 				await this.rideService.getAllSortedAndPaginated(start, count)
 			).map(async (r) => ({
 				...r,
-				...this.rideService.calculateRideInfo(r),
 				user: await this.userService.findId(r.userId),
 				scooter: await this.scooterService.findId(r.scooterId),
 			}))
@@ -39,11 +38,10 @@ class AdminRidesController {
 
 	getOne = async (req: Request<Partial<IdParamsDTO>>, res: Response) => {
 		const { id } = req.params as IdParamsDTO;
-		const ride = await this.rideService.findId(id);
+		const ride = await this.rideService.getCalculatedRide(id);
 		if (!ride) throw ApiError.rideNotFound;
 		const xride = {
 			...ride.toJSON(),
-			...this.rideService.calculateRideInfo(ride),
 			user: await this.userService.findId(ride.userId),
 			scooter: await this.scooterService.findId(ride.scooterId),
 		};

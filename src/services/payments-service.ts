@@ -17,12 +17,12 @@ export default abstract class PaymentsService {
     }
 
     // TODO: merge price into ride
-    async createCheckoutForRide(ride: Ride, price: number) {
+    async createCheckoutForRide(ride: Ride) {
         const data = {
             rideId: ride._id,
             for: "Scooter ride",
             currency: "RON",
-            amount: price
+            amount: ride.price
         };
 
         const successToken = await JWTP.sign({
@@ -47,7 +47,7 @@ export default abstract class PaymentsService {
                 line_items: [{
                     name: "Scooter ride",
                     currency: "ron",
-                    amount: price,
+                    amount: ride.price,
                     quantity: 1
                 }],
                 payment_method_types: [ 'card' ],

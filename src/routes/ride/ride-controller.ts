@@ -35,15 +35,14 @@ class RideController {
 		req: Request<Partial<IdParamsDTO>, {}, {}>,
 		res: Response<{
 			status: string;
-			linearDistance: number;
-			duration: number;
+			ride: Ride;
 		}>
 	) => {
 		const { id } = req.params as IdParamsDTO;
-		const result = await this.rideService.getRide(id, req.session.user);
+		const ride = await this.rideService.getRide(id, req.session.user);
 		res.json({
 			status: "success",
-			...result,
+			ride,
 		});
 	};
 
@@ -51,24 +50,16 @@ class RideController {
 		req: Request<Partial<IdParamsDTO>, {}, {}, Partial<LocationQueryDTO>>,
 		res: Response<{
 			status: string;
-			linearDistance: number;
-			price: number;
-			duration: number;
-			distanceUnit: string;
-			durationUnit: string;
-			currency: string;
+			ride: Ride
 		}>
 	) => {
 		const { location } = req.query as LocationQueryDTO;
 		const { id } = req.params as IdParamsDTO;
 		const coords = location.split(",").map(parseFloat) as [number, number];
-		const result = await this.rideService.endRide(id, coords);
+		const ride = await this.rideService.endRide(id, coords);
 		res.json({
 			status: "success",
-			...result,
-			distanceUnit: "meters",
-			durationUnit: "millis",
-			currency: "RON",
+			ride,
 		});
 	};
 

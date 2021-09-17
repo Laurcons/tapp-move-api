@@ -70,18 +70,17 @@ export default abstract class RideService extends CrudService<Ride> {
 	pushRouteLocation(ride: Ride, location: [number, number]) {
 		return this.model.updateOne(
 			{ _id: ride._id },
-			{ $push: { route: location } }
+			{ 
+				$set: { distance: this.calculateRideInfo(ride).distance },
+				$push: { route: location }
+			}
 		);
 	}
 
 	calculateRideInfo(ride: Ride) {
-		const linearDistance = getDistance(ride.route[ride.route.length - 1], {
-			lat: ride.route[0][1],
-			lon: ride.route[0][0],
-		});
-		let pathDistance = 0;
+		let distance = 0;
 		for (let i = 0; i < ride.route.length - 1; i++) {
-			pathDistance += getDistance(ride.route[i], ride.route[i + 1]);
+			distance += getDistance(ride.route[i], ride.route[i + 1]);
 		}
 		const duration =
 			-1 *
@@ -94,19 +93,11 @@ export default abstract class RideService extends CrudService<Ride> {
 						.as("milliseconds"));
 		const price = 200 + Math.floor(80 * (duration / 1000 / 60)); // 0.80 lei per minute + 2 lei flatrate
 		return {
-			linearDistance,
-			pathDistance,
+			// linearDistance,
+			distance,
 			duration,
 			price,
 		};
-	}
-
-	async isUserRiding(user: User): Promise<boolean> {
-		const result = await this.model.findOne({
-			userId: user._id,
-			status: "ongoing",
-		});
-		return !!result;
 	}
 
 	async getRide(rideId: string, user: User) {
@@ -116,10 +107,12 @@ export default abstract class RideService extends CrudService<Ride> {
 		});
 		if (!ride) throw ApiError.rideNotFound;
 		const details = this.calculateRideInfo(ride);
-		return {
-			ride,
-			...details,
-		};
+		const newRide = await this.model.findOneAndUpdate(
+			{ _id: ride._id },
+			{ $set: details },
+			{ new: true }
+		);
+		return newRide as Ride;
 	}
 
 	async startRide(
@@ -169,6 +162,9 @@ export default abstract class RideService extends CrudService<Ride> {
 					coordinates: scooter.location.coordinates,
 				},
 				status: "ongoing",
+				price: 0,
+				distance: 0,
+				duration: 0,
 				scooterId: scooter._id,
 				userId: user._id,
 			});
@@ -224,18 +220,18 @@ export default abstract class RideService extends CrudService<Ride> {
 					},
 					status: "payment-pending",
 					endedAt: new Date(),
+					price: details.price,
+					distance: details.distance,
+					duration: details.duration,
 				},
 				$push: {
 					route: currentCoords,
 				},
 			},
-			{ new: true, useFindAndModify: false }
+			{ new: true }
 		);
 		await this.scooterService.unbookScooter(scooter.code);
-		return {
-			ride: newRide,
-			...details,
-		};
+		return newRide as Ride;
 	}
 
 	async updateRide(rideId: string, settings: PatchBodyDTO) {
@@ -331,11 +327,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			status: "payment-initiated"
 		});
 		if (!ride) throw ApiError.rideNotFound;
-		const calculated = this.calculateRideInfo(ride);
-		const session = await this.paymentsService.createCheckoutForRide(
-			ride,
-			calculated.price
-		);
+		const session = await this.paymentsService.createCheckoutForRide(ride);
 		await this.model.updateOne(
 			{ _id: rideId },
 			{ $set: { checkoutId: session.id } }
@@ -359,6 +351,18 @@ export default abstract class RideService extends CrudService<Ride> {
 			$set: { status: "payment-pending" },
 			$unset: { checkoutId: 1 }
 		});
+	}
+
+	async getCalculatedRide(rideId: string | mongoose.Types.ObjectId) {
+		if (typeof rideId === "string") {
+			rideId = mongoose.Types.ObjectId(rideId);
+		}
+		const origRide = await this.model.findOne({ _id: rideId });
+		if (!origRide) throw ApiError.rideNotFound;
+		return this.model.findOneAndUpdate(
+			{ _id: rideId },
+			{ $set: this.calculateRideInfo(origRide) }
+		);
 	}
 }
 class RideServiceInstance extends RideService {}
