@@ -220,9 +220,7 @@ export default abstract class RideService extends CrudService<Ride> {
 					},
 					status: "payment-pending",
 					endedAt: new Date(),
-					price: details.price,
-					distance: details.distance,
-					duration: details.duration,
+					...details,
 				},
 				$push: {
 					route: currentCoords,
