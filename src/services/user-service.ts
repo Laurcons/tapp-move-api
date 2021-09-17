@@ -71,12 +71,12 @@ export default abstract class UserService extends CrudService<User> {
 
 	async login(email: string, password: string) {
 		const user = await this.model.findOne({ email }).select("+password");
-		if (!user) throw ApiError.users.emailusers.passwordIncorrect;
+		if (!user) throw ApiError.users.passwordIncorrect;
 		if (user.suspendedReason) {
 			throw ApiError.users.userSuspended;
 		}
 		if (!(await this.verifyPassword(password, user.password)))
-			throw ApiError.users.emailusers.passwordIncorrect;
+			throw ApiError.users.passwordIncorrect;
 		// remove this step with caution: this step reselects the user without the
 		//  password. omitting this step might send to the frontend the password field
 		const newUser = await this.model.findOneAndUpdate(
