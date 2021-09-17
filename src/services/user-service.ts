@@ -54,7 +54,7 @@ export default abstract class UserService extends CrudService<User> {
 
 	async register(username: string, passwordRaw: string, email: string) {
 		if (!(await this.isEmailAvailable(email))) {
-			throw ApiError.users.emailNotAvailable;
+			throw ApiError.users.emailUnavailable;
 		}
 		const hashed = await this.hashPassword(passwordRaw);
 		const user = await this.model.create({
@@ -107,7 +107,7 @@ export default abstract class UserService extends CrudService<User> {
 		const { email, password, oldPassword } = updates;
 		if (email) {
 			if (!this.isEmailAvailable(email)) {
-				throw ApiError.users.emailNotAvailable;
+				throw ApiError.users.emailUnavailable;
 			}
 		}
 		let hashedPassword = undefined;

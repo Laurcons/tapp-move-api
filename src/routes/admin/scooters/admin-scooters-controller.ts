@@ -81,14 +81,13 @@ class AdminScootersController {
         res: Response
     ) => {
         const fields = req.body;
-        const scooter = await this.scooterService.insert({
-            ...fields,
-            location: {
-                type: "Point",
-                coordinates: fields.location
-            },
-            status: "available"
-        });
+        const scooter = await this.scooterService.addNew({
+			...fields,
+			location: {
+				type: "Point",
+				coordinates: fields.location,
+			},
+		});
         res.json({
             status: "success",
             scooter

@@ -13,7 +13,7 @@ export default class ApiError extends Error {
 		actionNotAllowed: new ApiError(403, "not-allowed", "You are not allowed to perform this action, with these parameters."),
 	};
 	static users = {
-		emailNotAvailable: new ApiError(400, "email-not-available", "This email is not available."),
+		emailUnavailable: new ApiError(400, "email-not-available", "This email is not available."),
 		userNotFound: new ApiError(400, "user-not-found", "The user wasn't found!"),
 		emailPasswordIncorrect: new ApiError(400, "email-password-incorrect", "Your email or password is incorrect!"),
 		passwordIncorrect: new ApiError(400, "password-incorrect", "The password is incorrect"),
@@ -21,6 +21,7 @@ export default class ApiError extends Error {
 		userSuspended: new ApiError(400, "user-suspended", "This user is suspended."),
 	};
 	static scooters = {
+		scooterCodeUnavailable: new ApiError(400, "scooter-code-unavailable", "The scooter code you provided is not available."),
 		scooterNotFound: new ApiError(404, "scooter-not-found", "The scooter was not found"),
 		tooFarAway: new ApiError(400, "too-far-away", "You are too far away to do this action"),
 		scooterUnavailable: new ApiError(400, "scooter-unavailable", "This scooter is unavailable"),

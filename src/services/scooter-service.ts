@@ -1,9 +1,11 @@
 import { getDistance } from "geolib";
-import mongoose from "mongoose";
+import mongoose, { LeanDocument } from "mongoose";
 import ApiError from "../api-error";
 import { Scooter, ScooterModel } from "../routes/scooter/scooter-model";
 import CrudService from "./crud-service-base";
 import { ScooterTcpService } from "./scooter-tcp-service";
+
+type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export default abstract class ScooterService extends CrudService<Scooter> {
 	private tcpService = ScooterTcpService.instance;
@@ -136,6 +138,17 @@ export default abstract class ScooterService extends CrudService<Scooter> {
 			[ { $set: { status: { $cond: [ { $eq: ["$status", "disabled"] }, "available", "disabled" ] } } } ],
 			{ new: true }
 		);
+		return scooter;
+	}
+
+	async addNew(fields: WithOptional<Omit<LeanDocument<Scooter>, "status">, "lockId">) {
+		const res = await this.findOne({ code: fields.code });
+		if (res)	
+			throw ApiError.scooters.scooterCodeUnavailable;
+        const scooter = await this.model.create({
+			...fields,
+			status: "available",
+		});
 		return scooter;
 	}
 }
