@@ -61,7 +61,7 @@ export default abstract class RideService extends CrudService<Ride> {
 			);
 			return;
 		}
-		this.pushRouteLocation(ride, location);
+		await this.pushRouteLocation(ride, location);
 		this._logger.log(
 			`Added location with d=${distance} for code=${scooter.code}`
 		);
