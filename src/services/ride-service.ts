@@ -112,7 +112,6 @@ export default abstract class RideService extends CrudService<Ride> {
 	async getRide(rideId: string, user: User) {
 		const ride = await this.model.findOne({
 			_id: mongoose.Types.ObjectId(rideId),
-			status: "ongoing",
 			userId: user._id,
 		});
 		if (!ride) throw ApiError.rideNotFound;

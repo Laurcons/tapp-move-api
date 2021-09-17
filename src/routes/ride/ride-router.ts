@@ -23,7 +23,7 @@ rideRouter.post(
 );
 rideRouter.get("/:id",
     authenticate("user"),
-    validate({ params: IdParamsDTO, query: LocationQueryDTO }),
+    validate({ params: IdParamsDTO }),
     asyncWrap(RideController.getRide)
 );
 rideRouter.post(
