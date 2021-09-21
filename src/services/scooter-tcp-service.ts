@@ -1,5 +1,6 @@
 import net from "net";
 import { TypedEmitter } from "tiny-typed-emitter";
+import ApiError from "../api-error";
 import {
     DecimalDegreesLocation,
     decimalMinutesToDecimalDegrees
@@ -254,7 +255,7 @@ export abstract class ScooterTcpService {
 			});
 			setTimeout(() => {
 				if (!isPending) return;
-				reject();
+				reject(ApiError.general.actionNotAllowed);
 				this._logger?.log(
 					`Timeout while waiting for ${message.command} from ${message.lockId}`
 						.red

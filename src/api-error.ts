@@ -25,6 +25,7 @@ export default class ApiError extends Error {
 		scooterNotFound: new ApiError(404, "scooter-not-found", "The scooter was not found"),
 		tooFarAway: new ApiError(400, "too-far-away", "You are too far away to do this action"),
 		scooterUnavailable: new ApiError(400, "scooter-unavailable", "This scooter is unavailable"),
+		scooterTimeout: new ApiError(400, "scooter-timeout", "This scooter didn't respond. Try again!"),
 	};
 	static rides = {
 		rideNotFound: new ApiError(404, "ride-not-found", "The ride wasn't found"),
