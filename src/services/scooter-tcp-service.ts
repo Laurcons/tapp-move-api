@@ -255,7 +255,7 @@ export abstract class ScooterTcpService {
 			});
 			setTimeout(() => {
 				if (!isPending) return;
-				reject(ApiError.general.actionNotAllowed);
+				reject(ApiError.scooters.scooterTimeout);
 				this._logger?.log(
 					`Timeout while waiting for ${message.command} from ${message.lockId}`
 						.red

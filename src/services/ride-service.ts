@@ -251,10 +251,12 @@ export default abstract class RideService extends CrudService<Ride> {
 				if (lock) await this.tcpService.lockScooter(scooter.lockId);
 				else await this.tcpService.unlockScooter(scooter.lockId);
 			}
-			await this.tcpService.modifyLights(scooter.lockId, {
-				head: headlights,
-				tail: taillights,
-			});
+			if (headlights !== undefined || taillights !== undefined) {
+				await this.tcpService.modifyLights(scooter.lockId, {
+					head: headlights,
+					tail: taillights,
+				});
+			}
 		} else {
 			// update scooter n set locked
 			if (lock !== undefined) {
