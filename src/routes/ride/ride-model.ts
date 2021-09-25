@@ -14,6 +14,8 @@ export interface Ride extends mongoose.Document {
 		type: "Point";
 		coordinates: [number, number];
 	};
+    startAddress: string;
+    endAddress?: string;
 	startedAt: Date;
 	endedAt?: Date;
 	checkoutId?: string;
@@ -37,6 +39,11 @@ export const rideSchema = new mongoose.Schema({
     endLocation: {
         type: { type: String, default: "Point" },
         coordinates: [Number, Number],
+        required: false
+    },
+    startAddress: String,
+    endAddress: {
+        type: String,
         required: false
     },
     startedAt: {

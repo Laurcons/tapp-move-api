@@ -15,6 +15,7 @@
     "@aws-sdk/client-s3": "^3.27.0",
     "@aws-sdk/s3-presigned-post": "^3.30.0",
     "@aws-sdk/s3-request-presigner": "^3.27.0",
+    "axios": "^0.21.4",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",

@@ -1,7 +1,9 @@
+import axios from "axios";
 import { getDistance } from "geolib";
 import { DateTime } from "luxon";
 import mongoose from "mongoose";
 import ApiError from "../api-error";
+import Config from "../environment";
 import { PatchBodyDTO } from "../routes/ride/ride-dto";
 import { Ride, RideModel, RideStatus } from "../routes/ride/ride-model";
 import { User } from "../routes/user/user-model";
@@ -154,6 +156,15 @@ export default abstract class RideService extends CrudService<Ride> {
 					{ isUnlocked: true }
 				);
 			}
+			const startAddress = await (async () => {
+				const result = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${scooter.location.coordinates[0]},${scooter.location.coordinates[1]}&key=${Config.get("MAPS_API_KEY")}`);
+				console.log(result.data);
+				const components = result.data.results[0].address_components as any[];
+				return (
+					components[1].long_name + ' ' +
+					components[0].long_name
+				);
+			})();
 			// create ride
 			const ride = await this.insert({
 				route: [scooter.location.coordinates],
@@ -161,6 +172,7 @@ export default abstract class RideService extends CrudService<Ride> {
 					type: "Point",
 					coordinates: scooter.location.coordinates,
 				},
+				startAddress,
 				status: "ongoing",
 				price: 0,
 				distance: 0,
@@ -209,6 +221,12 @@ export default abstract class RideService extends CrudService<Ride> {
 		} else {
 			await this.scooterService.setUnlocked(scooter, true);
 		}
+		const endAddress = await(async () => {
+			const result = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentCoords[0]},${currentCoords[1]}&key=${Config.get("MAPS_API_KEY")}`);
+			console.log(result.data);
+			const components = result.data.results[0].address_components as any[];
+			return components[1].long_name + " " + components[0].long_name;
+		})();
 		// end in db
 		const newRide = await this.model.findOneAndUpdate(
 			{ _id: ride._id },
@@ -218,6 +236,7 @@ export default abstract class RideService extends CrudService<Ride> {
 						type: "Point",
 						coordinates: currentCoords,
 					},
+					endAddress,
 					status: "payment-pending",
 					endedAt: new Date(),
 					...details,
