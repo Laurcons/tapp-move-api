@@ -46,7 +46,7 @@ export default abstract class RideService extends CrudService<Ride> {
 		});
 		if (!ride && data.isFromTracking) {
 			// we tell the scooter to stop sending at interval
-			await this.tcpService.endTrackPosition(lockId);
+			// await this.tcpService.endTrackPosition(lockId);
 		}
 		if (!ride) {
 			return;
