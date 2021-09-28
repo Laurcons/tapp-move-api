@@ -82,7 +82,8 @@ export default abstract class PaymentsService {
             paymentIntent: paymentIntent.client_secret,
             ephemeralKey: ephemeralKey.secret,
             customer: customer.id,
-            publishableKey: Config.get("STRIPE_PUBLISHABLE")
+            publishableKey: Config.get("STRIPE_PUBLISHABLE"),
+            ride: ride.toObject()
         };
     }
 

@@ -20,6 +20,7 @@ class WebhooksController {
         res.sendStatus(200);
 
         switch (event.type) {
+            case "payment_intent.succeeded":
             case "checkout.session.completed": {
                 const object = event.data.object as any;
                 const metadata: Record<string, string> = object.metadata;
