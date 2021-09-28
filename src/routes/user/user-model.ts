@@ -11,6 +11,10 @@ export interface User extends mongoose.Document {
 	forgotPasswordToken?: string;
 	driversLicenseKey?: string;
 	isLicenseValid?: boolean;
+	rating: {
+		ios?: string;
+		android?: string;
+	};
 }
 
 export const userSchema = new mongoose.Schema({
@@ -47,6 +51,10 @@ export const userSchema = new mongoose.Schema({
 	isLicenseValid: {
 		type: Boolean,
 		required: false
+	},
+	rating: {
+		ios: { type: String, required: false },
+		android: { type: String, required: false },
 	},
 });
 

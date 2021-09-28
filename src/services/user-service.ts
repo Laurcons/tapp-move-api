@@ -220,5 +220,24 @@ export default abstract class UserService extends CrudService<User> {
 		);
 		return user;
 	}
+
+	async setRating(user: User, platform: "ios" | "android", value: string) {
+		const newUser = await this.model.findOneAndUpdate(
+			{ _id: user._id },
+			{ $set: {
+				rating: {
+					[platform]: value
+				}
+			} },
+			{ new: true }
+		);
+		if (!newUser) throw "xd";
+		// update in session
+		await this.sessionService.updateMany(
+			{ "user._id": user._id },
+			{ $set: { user: newUser } }
+		);
+		return newUser;
+	}
 }
 class UserServiceInstance extends UserService {}

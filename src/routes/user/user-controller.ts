@@ -2,7 +2,7 @@ import express from "express";
 import ApiError from "../../api-error";
 import SessionService from "../../services/session-service";
 import UserService from "../../services/user-service";
-import { ForgotPasswordBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from "./user-dto";
+import { ForgotPasswordBodyDTO, RatingBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from "./user-dto";
 import { User } from "./user-model";
 
 class UserController {
@@ -74,6 +74,18 @@ class UserController {
 			status: "success"
 		});
 	};
+
+	rating = async (
+		req: express.Request<{}, {}, RatingBodyDTO>,
+		res: express.Response
+	) => {
+		const { platform, value } = req.body;
+		const newUser = await this.userService.setRating(req.session.user, platform, value);
+		res.json({
+			status: "success",
+			user: newUser
+		});
+	}
 }
 
 export default new UserController();

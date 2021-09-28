@@ -29,3 +29,10 @@ export class ForgotPasswordBodyDTO {
     @cv.IsEmail()
     email!: string;
 }
+
+export class RatingBodyDTO {
+    @cv.IsIn(["ios", "android"])
+    platform!: "ios" | "android";
+    @cv.IsString()
+    value!: string;
+}

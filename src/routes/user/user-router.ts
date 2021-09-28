@@ -4,7 +4,7 @@ import { asyncWrap } from "../../async-wrap";
 import authenticate from "../../middlewares/auth-middleware";
 import validate from "../../middlewares/validate-middleware";
 import UserController from "./user-controller";
-import { ForgotPasswordBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from './user-dto';
+import { ForgotPasswordBodyDTO, RatingBodyDTO, ResetPasswordBodyDTO, UpdateBodyDTO } from './user-dto';
 
 const userRouter = express.Router();
 
@@ -35,5 +35,11 @@ userRouter.post(
 	validate({ body: ResetPasswordBodyDTO}),
 	asyncWrap(UserController.resetPassword)
 );
+userRouter.post(
+	"/rating",
+	authenticate("user"),
+	validate({ body: RatingBodyDTO }),
+	asyncWrap(UserController.rating)
+)
 
 export default userRouter;
