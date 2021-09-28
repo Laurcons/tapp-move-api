@@ -78,7 +78,9 @@ abstract class CrudService<Doc extends mongoose.Document> {
 		return this.model.aggregate(pipeline);
 	}
 
-	count() {
+	count(match?: mongoose.FilterQuery<Doc>) {
+		if (match)
+			return this.model.countDocuments(match);
 		return this.model.countDocuments();
 	}
 }

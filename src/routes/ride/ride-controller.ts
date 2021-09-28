@@ -93,9 +93,12 @@ class RideController {
 		const start = parseInt(req.query.start ?? "0");
 		const count = parseInt(req.query.count ?? "20");
 		const rides = await this.rideService.getRidesForUser(req.session.user._id, start, count, status);
+		let countMatch: any = { userId: req.session.user._id };
+		if (status) countMatch.status = status;
+		const total = await this.rideService.count(countMatch);
 		res.json({
 			status: "success",
-			start, count, rides
+			start, count, total, rides
 		});
 	}
 }
