@@ -104,26 +104,28 @@ export default abstract class UserService extends CrudService<User> {
 			oldPassword: string;
 		}
 	) {
-		const { email, password, oldPassword } = updates;
+		const { email, password, username, oldPassword } = updates;
+		if (!(await this.verifyPassword(oldPassword, user.password))) {
+			throw ApiError.users.passwordIncorrect;
+		}
+		let $set: Record<string, string> = {};
 		if (email) {
 			if (!this.isEmailAvailable(email)) {
 				throw ApiError.users.emailUnavailable;
 			}
+			$set.email = email;
 		}
-		let hashedPassword = undefined;
 		if (password) {
-			if (!(await this.verifyPassword(oldPassword, user.password))) {
-				throw ApiError.users.passwordIncorrect;
-			}
-			hashedPassword = await this.hashPassword(password);
+			const hashedPassword = await this.hashPassword(password);
+			$set.password = hashedPassword;
+		}
+		if (username) {
+			$set.username = username;
 		}
 		const newUser = await this.model.findOneAndUpdate(
 			{ _id: user._id },
 			{
-				$set: {
-					...updates,
-					password: hashedPassword,
-				},
+				$set
 			},
 			{ new: true }
 		);
@@ -133,10 +135,7 @@ export default abstract class UserService extends CrudService<User> {
 		// update sessions
 		await this.sessionService.updateMany({ "user._id": user._id }, {
 			$set: {
-				user: {
-					...updates,
-					password: hashedPassword,
-				},
+				user: newUser,
 			},
 		} as any);
 		return newUser;

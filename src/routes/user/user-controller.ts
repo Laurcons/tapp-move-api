@@ -29,8 +29,10 @@ class UserController {
 			user: User;
 		}>
 	) => {
+		const user = await this.userService.findId(req.session.user._id).select("+password");
+		if (!user) throw "what";
 		const newUser = await this.userService.update(
-			req.session.user,
+			user,
 			req.body
 		);
 		console.log({ newUser });
