@@ -44,5 +44,11 @@ rideRouter.post(
 	validate({ params: IdParamsDTO }),
 	asyncWrap(RideController.pay)
 );
+rideRouter.post(
+	"/:id/paymentIntent",
+	authenticate("user"),
+	validate({ params: IdParamsDTO }),
+	asyncWrap(RideController.paymentIntent)
+);
 
 export default rideRouter;

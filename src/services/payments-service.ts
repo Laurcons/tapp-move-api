@@ -16,7 +16,6 @@ export default abstract class PaymentsService {
         return this._instance;
     }
 
-    // TODO: merge price into ride
     async createCheckoutForRide(ride: Ride) {
         const data = {
             rideId: ride._id,
@@ -64,6 +63,27 @@ export default abstract class PaymentsService {
 
     async verifyWebhookSignature(body: string, signature: string) {
         return stripe.webhooks.constructEvent(body, signature, Config.get("STRIPE_WEBHOOK_SECRET"));
+    }
+
+    async createPaymentIntentForRide(ride: Ride) {
+        const customer = await stripe.customers.create({
+            name: "Georgilă Georgescu"
+        });
+        const ephemeralKey = await stripe.ephemeralKeys.create({ customer: customer.id }, { apiVersion: "2020-08-27" });
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: ride.price,
+            currency: 'ron',
+            customer: customer.id,
+            metadata: {
+                rideId: ride._id.toString()
+            },
+        });
+        return {
+            paymentIntent: paymentIntent.client_secret,
+            ephemeralKey: ephemeralKey.secret,
+            customer: customer.id,
+            publishableKey: Config.get("STRIPE_PUBLISHABLE")
+        };
     }
 
 }

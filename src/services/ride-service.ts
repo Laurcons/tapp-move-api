@@ -383,5 +383,13 @@ export default abstract class RideService extends CrudService<Ride> {
 			{ $set: this.calculateRideInfo(origRide) }
 		);
 	}
+
+	async createPaymentIntent(rideId: string) {
+		const ride = await this.findId(rideId);
+		if (!ride)
+			throw ApiError.rides.rideNotFound;
+		const info = await this.paymentsService.createPaymentIntentForRide(ride);
+		return info;
+	}
 }
 class RideServiceInstance extends RideService {}

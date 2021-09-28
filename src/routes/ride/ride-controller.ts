@@ -85,6 +85,18 @@ class RideController {
 		});
 	}
 
+	paymentIntent = async (
+		req: Request<Partial<IdParamsDTO>>,
+		res: Response
+	) => {
+		const { id } = req.params as IdParamsDTO;
+		const info = await this.rideService.createPaymentIntent(id);
+		res.json({
+			status: "success",
+			...info
+		});
+	}
+
 	getRides = async (
 		req: Request<{}, {}, {}, GetRidesQueryDTO>,
 		res: Response
