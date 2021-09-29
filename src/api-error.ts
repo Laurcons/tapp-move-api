@@ -29,6 +29,7 @@ export default class ApiError extends Error {
 	};
 	static rides = {
 		rideNotFound: new ApiError(404, "ride-not-found", "The ride wasn't found"),
+		userHasUnpaidRides: new ApiError(400, "user-has-unpaid-rides", "You have unpaid rides. Please pay them before starting a new ride!"),
 	};
 	static uploads = {
 		fileNotUploaded: new ApiError(400, "file-not-uploaded", "You need to upload a file!"),
